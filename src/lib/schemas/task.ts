@@ -1,0 +1,65 @@
+import z from "zod";
+import { dateSchema, uuidSchema } from "./helpers";
+
+export const TaskSchema = z.object({
+  id: z.string().optional(),
+  title: z.string().nullable(),
+  task: z.string().nullable(),
+  details: z.string().nullable(),
+  notes: z.string().nullable(),
+
+  priority: z.number().int().min(1).max(5).optional().default(1),
+  color: z.string().nullable(),
+
+  link: z.string().nullable(),
+  linkText: z.string().nullable(),
+
+  sortIndex: z.number().int().optional().default(0),
+  plannerSortIndex: z.number().int().optional().default(0),
+
+  completed: z.boolean().default(false),
+  status: z.string().nullable(),
+
+  createdAt: dateSchema,
+  updatedAt: dateSchema,
+
+  dueOn: dateSchema.nullable(),
+  dueAt: dateSchema.nullable(),
+  completedAt: dateSchema.nullable(),
+  deletedAt: dateSchema.nullable(),
+
+  taskListId: z.string("TaskList is required").nullable().optional(),
+});
+
+export type TaskInput = z.infer<typeof TaskSchema>;
+
+export const CreateTaskSchema = z.object({
+  title: z.string().optional(),
+  task: z.string().optional(),
+  details: z.string().optional(),
+  notes: z.string().optional(),
+
+  priority: z.number().int().min(0).optional(),
+  color: z.string().optional(),
+
+  link: z.string().optional(),
+  linkText: z.string().optional(),
+
+  sortIndex: z.number().int().optional(),
+  plannerSortIndex: z.number().int().optional(),
+
+  completed: z.boolean().optional(),
+  status: z.string().optional(),
+
+  dueOn: dateSchema.optional(),
+  dueAt: dateSchema.optional(),
+
+  userId: uuidSchema.optional(),
+  taskListId: uuidSchema.optional(),
+});
+
+export const UpdateTaskSchema = CreateTaskSchema.partial().extend({
+  id: uuidSchema,
+  completedAt: dateSchema.optional(),
+  deletedAt: dateSchema.optional(),
+});

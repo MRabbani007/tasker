@@ -1,0 +1,12 @@
+task: {
+    title: subject / topic / category
+    color -> flag
+}
+
+list: {
+    title -> name
+    subtitle -> description
+    details
+}
+
+add subtasks
