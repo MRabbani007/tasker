@@ -124,7 +124,7 @@ export default function MobileMenu({
       <div
         className={
           (viewMobileMenu ? "" : "-translate-x-full") +
-          " fixed top-0 left-0 h-full w-[80%] max-w-[300px] bg-zinc-200 text-zinc-900 duration-200 z-120 lg:hidden"
+          " fixed top-0 left-0 h-full w-[80%] max-w-75 bg-zinc-200 text-zinc-900 duration-200 z-120 lg:hidden"
         }
       >
         <div className="flex items-center justify-between gap-4 p-4">

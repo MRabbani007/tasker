@@ -7,6 +7,12 @@ declare global {
     | FieldErrorsImpl
     | undefined;
 
+  type User = {
+    firstName?: string;
+    lastName?: string | null;
+    email?: string;
+  };
+
   type AdminFiltersType = {
     query?: string;
   };
@@ -16,9 +22,9 @@ declare global {
     direction: "asc" | "desc";
   };
 
-  export type AdminFormType = "CREATE_LIST" | "CREATE_TASK" | "";
+  type AdminFormType = "CREATE_LIST" | "CREATE_TASK" | "";
 
-  export type UserFormType =
+  type UserFormType =
     | "CREATE_LIST"
     | "CREATE_TASK"
     | "CREATE_NOTE"
@@ -57,6 +63,15 @@ declare global {
 
   type TaskListFilters = {
     query?: string;
+  };
+
+  type TaskListSummary = {
+    important: number;
+    dueToday: number;
+    dueThisWeek: number;
+    overdue: number;
+    open: number;
+    completed: number;
   };
 }
 

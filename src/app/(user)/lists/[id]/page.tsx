@@ -51,8 +51,8 @@ export default async function ListByIdPage({
   const { data: taskLists } = await getTaskLists({ page: 1, itemsPerPage: 20 });
 
   return (
-    <main className="flex-1 flex items-stretch">
-      <TaskListsSidebar lists={taskLists} />;
+    <main className="flex-1 flex items-stretch relative">
+      <TaskListsSidebar lists={taskLists} />
       <div className="flex-1 flex flex-col pb-4">
         <header className=" bg-white/80 backdrop-blur border-b border-zinc-200">
           <div className="px-4 py-5 max-w-5xl mx-auto">

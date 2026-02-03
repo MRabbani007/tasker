@@ -6,10 +6,11 @@ import toast from "react-hot-toast";
 import { LuBellRing } from "react-icons/lu";
 import { Task } from "../../../generated/prisma/client";
 import { useDebounce } from "@/hooks/useDebounce";
-import { deleteTask, updateTask } from "@/lib/actions/user/tasks";
+import { toggleTaskCompleted } from "@/lib/actions/user/tasks";
 import Link from "next/link";
 import { useUser } from "@/context/UserContext";
 import clsx from "clsx";
+import { cn } from "@/lib/utils";
 
 const priorityColor: Record<number, string> = {
   1: "#0284c7",
@@ -37,18 +38,44 @@ export default function CardTask({ task }: { task: Task }) {
 
   /** ---------------- Completion Sync ---------------- */
   useEffect(() => {
-    if (!mounted.current || debouncedCompleted === task.completed) return;
+    const ToggleCompleted = async () => {
+      try {
+        console.log("clicked");
+        if (!mounted.current || debouncedCompleted === task.completed) return;
 
-    updateTask({
-      ...task,
-      completed: debouncedCompleted,
-      completedAt: debouncedCompleted ? new Date() : null,
-    }).catch(() => toast.error("Failed to update task"));
+        const formData = new FormData();
+        formData.append("id", String(task.id));
+        formData.append("completed", String(debouncedCompleted));
+        formData.append(
+          "completedAt",
+          String(debouncedCompleted ? new Date() : null),
+        );
+
+        const res = await toggleTaskCompleted(formData);
+
+        console.log(res);
+        if (res.status === 200) {
+          toast.success("Task saved");
+        }
+      } catch {
+        toast.error("Failed to update task");
+      }
+    };
+
+    ToggleCompleted();
   }, [debouncedCompleted]);
 
   useEffect(() => {
     mounted.current = true;
   }, []);
+
+  useEffect(() => {
+    const temp = () => {
+      setCompleted(task.completed);
+    };
+
+    temp();
+  }, [task.completed]);
 
   /** ---------------- Dates ---------------- */
   const dueDate = task.dueOn ? new Date(task.dueOn) : null;
@@ -63,7 +90,10 @@ export default function CardTask({ task }: { task: Task }) {
   };
 
   return (
-    <div className="relative flex flex-col rounded-2xl overflow-hidden group bg-white shadow-sm hover:shadow-md transition">
+    <div
+      onClick={() => console.log(task)}
+      className="relative flex flex-col rounded-2xl overflow-hidden group bg-white shadow-sm hover:shadow-md transition"
+    >
       {/* Header */}
       <div className={clsx("flex items-center gap-3 p-4", bgClass)}>
         {/* Checkbox */}
@@ -72,10 +102,15 @@ export default function CardTask({ task }: { task: Task }) {
             type="checkbox"
             checked={completed}
             onChange={() => setCompleted((v) => !v)}
-            className="peer sr-only"
+            className="sr-only"
           />
           <span className="w-5 h-5 rounded-full border-2 border-blue-500 flex items-center justify-center">
-            <span className="w-3 h-3 rounded-full bg-blue-500 scale-0 peer-checked:scale-100 transition" />
+            <span
+              className={cn(
+                "w-3 h-3 rounded-full bg-blue-500 scale-0 transition",
+                completed ? "scale-100" : "scale-0",
+              )}
+            />
           </span>
         </label>
 
@@ -132,7 +167,7 @@ export default function CardTask({ task }: { task: Task }) {
           <Link
             href={task.link}
             target="_blank"
-            className="text-xs text-blue-600 hover:underline truncate max-w-[120px]"
+            className="text-xs text-blue-600 hover:underline truncate max-w-30"
           >
             {task.linkText ?? task.link}
           </Link>

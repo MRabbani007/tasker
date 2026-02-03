@@ -1,12 +1,21 @@
+"use client";
+
 import Link from "next/link";
 import { MdOutlineTaskAlt } from "react-icons/md";
 import MobileMenu from "./MobileMenu";
 import UserMenu from "./UserMenu";
-import { getCurrentUser } from "@/lib/auth/utils";
 import UserSearchTrigger from "@/components/UserSearchTrigger";
+import { usePathname } from "next/navigation";
+import { userPages } from "@/lib/shared";
 
-export default async function Navbar() {
-  const user = await getCurrentUser();
+export default function Navbar({ user }: { user?: User }) {
+  const pathname = usePathname().split("/")[1];
+
+  const onUserPage = userPages.includes(pathname);
+
+  if (onUserPage) {
+    return null;
+  }
 
   return (
     <nav className="sticky top-0 z-50 bg-linear-to-l from-cyan-950 to-gray-950 text-white backdrop-blur">

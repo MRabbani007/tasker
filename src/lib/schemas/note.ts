@@ -2,7 +2,7 @@ import z from "zod";
 import { dateSchema, uuidSchema } from "./helpers";
 
 export const NoteSchema = z.object({
-  id: uuidSchema,
+  id: z.string().optional(),
 
   title: z.string().nullable(),
   details: z.string().nullable(),
@@ -12,8 +12,6 @@ export const NoteSchema = z.object({
   openedAt: dateSchema.nullable(),
   pinnedAt: dateSchema.nullable(),
   deletedAt: dateSchema.nullable(),
-
-  userId: uuidSchema.nullable(),
 });
 
 export const CreateNoteSchema = z.object({

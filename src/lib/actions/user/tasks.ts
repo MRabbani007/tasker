@@ -9,7 +9,7 @@ import {
   normalizeDate,
   normalizeNumber,
 } from "@/lib/helpers";
-import { TaskSchema } from "@/lib/schemas/task";
+import { TaskCompleteSchema, TaskSchema } from "@/lib/schemas/task";
 import { revalidatePath } from "next/cache";
 import { Prisma } from "../../../../generated/prisma/client";
 import { TaskCreateInput } from "../../../../generated/prisma/models";
@@ -168,7 +168,6 @@ export async function updateTask(formData: unknown) {
         title: parsed.title,
         task: parsed.task,
         details: parsed.details,
-        sortIndex: parsed.sortIndex,
         color: parsed.color,
         notes: parsed.notes,
         priority: parsed.priority,
@@ -177,13 +176,49 @@ export async function updateTask(formData: unknown) {
         status: parsed.status,
         dueAt: parsed.dueAt,
         dueOn: parsed.dueOn,
-        completed: parsed.completed,
-        completedAt: parsed.completedAt,
         plannerSortIndex: parsed.plannerSortIndex,
       },
     });
 
     revalidatePath("/tasks");
+
+    return success(data, "Task updated");
+  } catch {
+    return fail(500, "Server error");
+  }
+}
+
+export async function toggleTaskCompleted(formData: unknown) {
+  try {
+    const user = await getCurrentUser();
+
+    if (!user) {
+      return failData(403, [], "Un-Authorized");
+    }
+
+    const raw = formDataToObject(formData as FormData);
+
+    const result = TaskCompleteSchema.safeParse({
+      ...raw,
+      completed: normalizeBoolean(raw.completed),
+      completedAt: normalizeDate(raw.completedAt),
+    });
+
+    if (!result.success) {
+      return fail(400, "Missing data");
+    }
+
+    const parsed = result.data;
+
+    const data = await prisma.task.update({
+      where: { id: parsed.id },
+      data: {
+        completed: parsed.completed,
+        completedAt: parsed.completedAt,
+      },
+    });
+
+    revalidatePath("/lists");
 
     return success(data, "Task updated");
   } catch {

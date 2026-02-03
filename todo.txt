@@ -10,3 +10,9 @@ list: {
 }
 
 add subtasks
+
+keyboard shortcuts:
+cmd k: searchmodal
+cmd /: tasklistsidebar
+cmd t: create task
+cmd l: create list

@@ -2,7 +2,7 @@ import Pagination from "@/components/Pagination";
 import UserFormTrigger from "@/components/UserFormTrigger";
 import CardTaskList from "@/features/tasks/CardTaskList";
 import FormTaskList from "@/features/tasks/FormTaskList";
-import { getTaskLists } from "@/lib/actions/user/tasklists";
+import { getTaskListsWithSummary } from "@/lib/actions/user/tasklists";
 import { extractFilters } from "@/lib/helpers";
 import { Plus } from "lucide-react";
 
@@ -25,7 +25,7 @@ export default async function ListsPage({
     FILTER_MAP,
   );
 
-  const { data, count = 0 } = await getTaskLists({
+  const { data, count = 0 } = await getTaskListsWithSummary({
     page,
     itemsPerPage,
     filters,

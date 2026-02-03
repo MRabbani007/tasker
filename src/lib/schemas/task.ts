@@ -33,6 +33,12 @@ export const TaskSchema = z.object({
 
 export type TaskInput = z.infer<typeof TaskSchema>;
 
+export const TaskCompleteSchema = z.object({
+  id: z.string().optional(),
+  completed: z.boolean().default(false),
+  completedAt: dateSchema.nullable(),
+});
+
 export const CreateTaskSchema = z.object({
   title: z.string().optional(),
   task: z.string().optional(),

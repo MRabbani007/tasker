@@ -60,6 +60,119 @@ export async function getTaskLists({
   }
 }
 
+export async function getTaskListsWithSummary({
+  itemsPerPage = 20,
+  page = 1,
+  filters,
+  sort,
+}: {
+  itemsPerPage?: number;
+  page?: number;
+  sort?: Sort;
+  filters?: TaskListFilters;
+}) {
+  try {
+    const user = await getCurrentUser();
+
+    if (!user) return failData(403, [], "Un-Authorized");
+
+    const skip = (page - 1) * itemsPerPage;
+    const take = itemsPerPage;
+
+    const whereClause: Prisma.TaskListWhereInput = {
+      userId: user.id,
+      ...(filters?.query && {
+        OR: [
+          { title: { contains: filters.query, mode: "insensitive" } },
+          { subtitle: { contains: filters.query, mode: "insensitive" } },
+          { details: { contains: filters.query, mode: "insensitive" } },
+        ],
+      }),
+    };
+
+    const orderBy: Prisma.TaskListOrderByWithRelationInput = sort
+      ? { [sort.field]: sort.direction }
+      : { sortIndex: "asc" };
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const endOfWeek = new Date(today);
+    endOfWeek.setDate(today.getDate() + 7);
+
+    const [lists, count] = await prisma.$transaction([
+      prisma.taskList.findMany({
+        where: whereClause,
+        take,
+        skip,
+        orderBy,
+      }),
+
+      prisma.taskList.count({ where: whereClause }),
+
+      // prisma.task.groupBy({
+      //   by: ["taskListId"],
+      //   where: {
+      //     taskList: { userId: user.id },
+      //   },
+      //   _count: {
+      //     id: true,
+      //   },
+      //   orderBy: { taskListId: "asc" },
+      // }),
+    ]);
+
+    /**
+     * More detailed grouped stats
+     */
+    const stats = await prisma.$queryRaw<
+      {
+        taskListId: string;
+        important: number;
+        dueToday: number;
+        dueThisWeek: number;
+        overdue: number;
+        open: number;
+        completed: number;
+      }[]
+    >`
+      SELECT
+        "taskListId",
+        COUNT(*) FILTER (WHERE "priority" >= 3 AND "completed" = false) AS important,
+        COUNT(*) FILTER (WHERE "dueOn"::date = CURRENT_DATE AND "completed" = false) AS "dueToday",
+        COUNT(*) FILTER (
+          WHERE "dueOn" > CURRENT_DATE
+          AND "dueOn" <= CURRENT_DATE + INTERVAL '7 days'
+          AND "completed" = false
+        ) AS "dueThisWeek",
+        COUNT(*) FILTER (WHERE "dueOn" < CURRENT_DATE AND "completed" = false) AS overdue,
+        COUNT(*) FILTER (WHERE "completed" = false) AS open,
+        COUNT(*) FILTER (WHERE "completed" = true) AS completed
+      FROM "Task"
+      GROUP BY "taskListId"
+    `;
+
+    const statsMap = new Map(stats.map((s) => [s.taskListId, s]));
+
+    const data = lists.map((list) => ({
+      ...list,
+      summary: statsMap.get(list.id) ?? {
+        important: 0,
+        dueToday: 0,
+        dueThisWeek: 0,
+        overdue: 0,
+        open: 0,
+        completed: 0,
+      },
+    }));
+
+    return success(data, "", count);
+  } catch (e) {
+    console.error(e);
+    return failData(500, [], "Server Error");
+  }
+}
+
 export async function getTaskListById(id: string) {
   try {
     const user = await getCurrentUser();
@@ -73,10 +186,9 @@ export async function getTaskListById(id: string) {
       // include: { tasks: true },
     });
 
-    return success(data)
+    return success(data);
   } catch {
-    return failData(500,null,"Server error")
-
+    return failData(500, null, "Server error");
   }
 }
 

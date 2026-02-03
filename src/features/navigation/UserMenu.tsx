@@ -6,12 +6,6 @@ import { useEffect, useRef, useState } from "react";
 import { LogOut, Settings } from "lucide-react";
 import { logoutAction } from "@/lib/auth/actions";
 
-type User = {
-  firstName: string;
-  lastName: string | null;
-  email: string;
-};
-
 export default function UserMenu({ user }: { user: User }) {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
@@ -34,7 +28,7 @@ export default function UserMenu({ user }: { user: User }) {
   }, [open]);
 
   const initials =
-    user.firstName.charAt(0).toUpperCase() +
+    (user?.firstName ? user?.firstName.charAt(0).toUpperCase() : "") +
     (user?.lastName ? user?.lastName.charAt(0).toUpperCase() : "");
 
   return (
