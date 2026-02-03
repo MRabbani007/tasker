@@ -1,40 +1,35 @@
 "use client";
 
+import React, { useEffect } from "react";
+import { useForm, SubmitHandler } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import toast from "react-hot-toast";
+import { Calendar, Flag, AlertCircle, Type, AlignLeft } from "lucide-react";
+
 import InputField from "@/components/forms/InputField";
+import TextAreaField from "@/components/ui/TextAreaField";
 import ModalForm from "@/components/ui/ModalForm";
 import { useUser } from "@/context/UserContext";
 import { createTask, deleteTask, updateTask } from "@/lib/actions/user/tasks";
 import { TaskInput, TaskSchema } from "@/lib/schemas/task";
 import { T_Task } from "@/lib/templates";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect } from "react";
-import { SubmitHandler, useForm } from "react-hook-form";
-import toast from "react-hot-toast";
+import { cn } from "@/lib/utils";
 import { useTaskFormVisibility } from "@/hooks/useTaskFormVisibility";
 import { Expand } from "@/components/Expand";
-import { object } from "zod";
-
-function mergeDateAndTime(date?: string, time?: string) {
-  if (!date) return null;
-  const d = new Date(date);
-  if (time) {
-    const [h, m] = time.split(":").map(Number);
-    d.setHours(h, m, 0, 0);
-  }
-  return d;
-}
 
 const COLORS = [
-  "bg-sky-600",
-  "bg-green-600",
-  "bg-yellow-500",
-  "bg-orange-600",
-  "bg-red-600",
-  "bg-zinc-600",
+  "bg-sky-500",
+  "bg-emerald-500",
+  "bg-amber-500",
+  "bg-orange-500",
+  "bg-rose-500",
+  "bg-slate-500",
 ];
 
 export default function FormTask() {
   const { showForm, setShowForm, editItem } = useUser();
+  const { visibility, toggle, showAll, hideAll } = useTaskFormVisibility();
+  const isOpen = showForm === "CREATE_TASK" || showForm === "EDIT_TASK";
 
   const {
     register,
@@ -45,225 +40,201 @@ export default function FormTask() {
     setValue,
   } = useForm({
     resolver: zodResolver(TaskSchema),
-    defaultValues: { ...T_Task, priority: 1 },
+    defaultValues: { ...T_Task, priority: 1, color: "bg-slate-500" },
   });
-
-  const { visibility, toggle, showAll, hideAll } = useTaskFormVisibility();
-  const allVisible = Object.values(visibility).every(Boolean);
-
-  /** ---------------- Populate on Edit ---------------- */
-  useEffect(() => {
-    if (showForm === "EDIT_TASK" && editItem?.type === "task") {
-      const task = editItem.data;
-
-      reset({
-        ...T_Task,
-        ...task,
-        // dueOn: task.dueOn
-        //   ? new Date(task.dueOn).toISOString().slice(0, 10)
-        //   : "",
-        // dueAt: task.dueOn
-        //   ? new Date(task.dueOn).toISOString().slice(11, 16)
-        //   : "",
-      });
-    }
-
-    if (showForm === "CREATE_TASK" && editItem?.type === "tasklist") {
-      reset({
-        ...T_Task,
-        taskListId: editItem.data.id,
-      });
-    }
-  }, [showForm, editItem, reset]);
-
-  /** ---------------- Submit ---------------- */
-  const onSubmit: SubmitHandler<TaskInput> = async (data) => {
-    const dueOn = mergeDateAndTime(
-      data.dueOn?.toDateString(),
-      data.dueAt?.toDateString(),
-    );
-
-    const payload = {
-      ...data,
-      dueOn,
-    };
-
-    const formData = new FormData();
-    Object.entries(payload).forEach(([key, value]) => {
-      if (value !== null && value !== undefined) {
-        formData.append(key, String(value));
-      }
-    });
-
-    try {
-      let result;
-      let message = "";
-
-      if (showForm === "CREATE_TASK") {
-        result = await createTask(formData);
-        message = "Task added";
-      } else {
-        result = await updateTask(formData);
-        message = "Task saved";
-      }
-
-      if (result?.status === 200) {
-        toast.success(message);
-        setShowForm("");
-      } else {
-        toast.error("Something went wrong");
-      }
-    } catch {
-      toast.error("Something went wrong");
-    }
-  };
-
-  /** ---------------- Delete ---------------- */
-  const handleDelete = async () => {
-    if (!editItem?.data?.id) return;
-    if (!confirm("Delete this task?")) return;
-
-    try {
-      await deleteTask(editItem.data.id);
-      toast.success("Task deleted");
-      setShowForm("");
-    } catch {
-      toast.error("Failed to delete");
-    }
-  };
 
   const priority = watch("priority");
   const color = watch("color");
+  const allVisible = Object.values(visibility).every(Boolean);
+
+  // Sync data on Edit
+  useEffect(() => {
+    if (isOpen && editItem?.type === "task") {
+      reset({ ...T_Task, ...editItem.data });
+    }
+  }, [isOpen, editItem, reset]);
+
+  const onSubmit: SubmitHandler<TaskInput> = async (data) => {
+    const formData = new FormData();
+    Object.entries(data).forEach(([key, val]) => {
+      if (val !== undefined && val !== null) formData.append(key, String(val));
+    });
+
+    try {
+      const action = showForm === "CREATE_TASK" ? createTask : updateTask;
+      const res = await action(formData);
+      if (res.status === 200) {
+        toast.success(
+          showForm === "CREATE_TASK" ? "Objective captured" : "Changes synced",
+        );
+        setShowForm("");
+      }
+    } catch {
+      toast.error("Network synchronization failed");
+    }
+  };
 
   return (
     <ModalForm
-      title={showForm === "CREATE_TASK" ? "Add Task" : "Edit Task"}
-      isOpen={showForm === "CREATE_TASK" || showForm === "EDIT_TASK"}
+      title={
+        showForm === "CREATE_TASK" ? "Capturing Objective" : "Refining Task"
+      }
+      isOpen={isOpen}
       setShowForm={setShowForm}
       onReset={() => setShowForm("")}
       onSubmit={handleSubmit(onSubmit)}
-      disabled={isSubmitting}
+      loading={isSubmitting}
       type={showForm === "CREATE_TASK" ? "add" : "edit"}
       deleteButton={showForm === "EDIT_TASK"}
-      onDelete={handleDelete}
-      maxW="max-w-5xl"
+      onDelete={async () => {
+        if (confirm("Permanently archive this task?")) {
+          if (editItem?.type === "task") {
+            await deleteTask(editItem?.data?.id);
+            setShowForm("");
+          }
+        }
+      }}
+      maxW="max-w-3xl"
     >
-      <div className="flex flex-wrap justify-center gap-2">
-        <ToggleButton
-          label="Title"
-          onClick={() => toggle("title")}
-          active={visibility.title}
-        />
-        <ToggleButton
-          label="Details"
-          onClick={() => toggle("details")}
-          active={visibility.details}
-        />
-        <ToggleButton
-          label="Notes"
-          onClick={() => toggle("notes")}
-          active={visibility.notes}
-        />
-        <ToggleButton
-          label="Due"
-          onClick={() => toggle("due")}
-          active={visibility.due}
-        />
-        <ToggleButton
-          label="Priority"
-          onClick={() => toggle("priority")}
-          active={visibility.priority}
-        />
-        <ToggleButton
-          label="Flag"
-          onClick={() => toggle("color")}
-          active={visibility.color}
-        />
-        <ToggleButton
-          label={allVisible ? "X" : "All"}
-          onClick={() => (allVisible ? hideAll() : showAll())}
-          active={allVisible}
-        />
-      </div>
-      <Expand show={visibility.title}>
-        <InputField
-          label="Title"
-          placeholder="Task title"
-          {...register("title")}
-          error={errors.title}
-        />
-      </Expand>
-      <InputField
-        label="Task"
-        placeholder="What needs to be done?"
-        {...register("task")}
-        error={errors.task}
-        autoFocus
-      />
-      <Expand show={visibility.details}>
-        <InputField
-          label="Details"
-          placeholder="Additional details"
-          {...register("details")}
-          error={errors.details}
-        />
-      </Expand>
-      <Expand show={visibility.notes}>
-        <InputField
-          label="Notes"
-          placeholder="Optional notes"
-          {...register("notes")}
-          error={errors.notes}
-        />
-      </Expand>
-      <Expand show={visibility.due}>
-        {/* Due Date & Time */}
-        <div className="grid grid-cols-2 gap-4">
-          <InputField label="Due date" type="date" {...register("dueOn")} />
-          <InputField label="Due time" type="time" {...register("dueAt")} />
+      <div className="space-y-8">
+        {/* 1. Quick Feature Toggles */}
+        <div className="flex flex-wrap items-center gap-2 pb-4 border-b border-slate-100">
+          <ToggleButton
+            icon={<Type size={12} />}
+            label="Title"
+            onClick={() => toggle("title")}
+            active={visibility.title}
+          />
+          <ToggleButton
+            icon={<AlignLeft size={12} />}
+            label="Description"
+            onClick={() => toggle("details")}
+            active={visibility.details}
+          />
+          <ToggleButton
+            icon={<Calendar size={12} />}
+            label="Deadline"
+            onClick={() => toggle("due")}
+            active={visibility.due}
+          />
+          <ToggleButton
+            icon={<AlertCircle size={12} />}
+            label="Priority"
+            onClick={() => toggle("priority")}
+            active={visibility.priority}
+          />
+          <ToggleButton
+            icon={<Flag size={12} />}
+            label="Flag"
+            onClick={() => toggle("color")}
+            active={visibility.color}
+          />
+          <div className="h-4 w-[1px] bg-slate-200 mx-1" />
+          <button
+            type="button"
+            onClick={() => (allVisible ? hideAll() : showAll())}
+            className="text-[10px] font-bold uppercase tracking-tighter text-indigo-600 hover:underline"
+          >
+            {allVisible ? "Simplify View" : "Show All Fields"}
+          </button>
         </div>
-      </Expand>
-      <div className="grid grid-cols-2 gap-4">
-        <Expand show={visibility.priority}>
-          {/* Priority */}
-          <div>
-            <label className="block text-sm font-medium mb-2">Priority</label>
-            <div className="flex gap-2">
-              {[1, 2, 3, 4, 5].map((p) => (
-                <button
-                  type="button"
-                  key={p}
-                  onClick={() => setValue("priority", p)}
-                  className={`w-9 h-9 rounded-full border text-sm font-medium transition
-                ${
-                  priority === p
-                    ? "bg-blue-600 text-white border-blue-600"
-                    : "bg-zinc-100 hover:bg-zinc-200"
-                }`}
-                >
-                  {p}
-                </button>
-              ))}
-            </div>
-          </div>
-        </Expand>
-        <Expand show={visibility.color}>
-          {/* color Picker */}
-          <div>
-            <label className="block text-sm font-medium mb-2">Flag</label>
-            <div className="flex gap-2 flex-wrap">
-              {COLORS.map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  onClick={() => setValue("color", c)}
-                  className={`w-7 h-7 rounded-full ${c} ring-offset-2 transition
-            ${color === c ? "ring-2 ring-black" : "hover:scale-110"}`}
+
+        {/* 2. Main Content Area */}
+        <div className="space-y-6">
+          <Expand show={visibility.title}>
+            <InputField
+              label="Context / Subject"
+              placeholder="e.g. Q1 Marketing"
+              {...register("title")}
+              error={errors.title}
+            />
+          </Expand>
+
+          <TextAreaField
+            label="Main Objective"
+            placeholder="Describe the core task..."
+            {...register("task")}
+            error={errors.task}
+            autoFocus
+          />
+
+          <Expand show={visibility.details}>
+            <TextAreaField
+              label="Strategic Details"
+              placeholder="Additional context or requirements..."
+              {...register("details")}
+              error={errors.details}
+            />
+          </Expand>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Expand show={visibility.due}>
+              <div className="space-y-4">
+                <InputField
+                  label="Due Date"
+                  type="date"
+                  {...register("dueOn")}
                 />
-              ))}
+                <InputField
+                  label="Specific Time"
+                  type="time"
+                  {...register("dueAt")}
+                />
+              </div>
+            </Expand>
+
+            <div className="space-y-6">
+              <Expand show={visibility.priority}>
+                <div className="space-y-3">
+                  <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">
+                    Priority Level
+                  </label>
+                  <div className="flex gap-2">
+                    {[1, 2, 3, 4, 5].map((p) => (
+                      <button
+                        type="button"
+                        key={p}
+                        onClick={() => setValue("priority", p)}
+                        className={cn(
+                          "w-10 h-10 rounded-xl border-2 font-bold transition-all flex items-center justify-center",
+                          priority === p
+                            ? "bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-100 scale-110"
+                            : "bg-slate-50 border-transparent text-slate-400 hover:bg-slate-100",
+                        )}
+                      >
+                        {p}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </Expand>
+
+              <Expand show={visibility.color}>
+                <div className="space-y-3">
+                  <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">
+                    Identify Flag
+                  </label>
+                  <div className="flex gap-3 flex-wrap">
+                    {COLORS.map((c) => (
+                      <button
+                        key={c}
+                        type="button"
+                        onClick={() => setValue("color", c)}
+                        className={cn(
+                          "w-7 h-7 rounded-full transition-all ring-offset-4 shadow-sm",
+                          c,
+                          color === c
+                            ? "ring-2 ring-indigo-500 scale-110"
+                            : "hover:scale-125",
+                        )}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </Expand>
             </div>
           </div>
-        </Expand>
+        </div>
       </div>
     </ModalForm>
   );
@@ -271,10 +242,12 @@ export default function FormTask() {
 
 function ToggleButton({
   label,
+  icon,
   onClick,
   active,
 }: {
   label: string;
+  icon: React.ReactNode;
   onClick: () => void;
   active: boolean;
 }) {
@@ -282,13 +255,14 @@ function ToggleButton({
     <button
       type="button"
       onClick={onClick}
-      className={`text-xs px-3 py-1 rounded-full border transition
-        ${
-          active
-            ? "bg-blue-600 text-white border-blue-600"
-            : "bg-zinc-100 hover:bg-zinc-200"
-        }`}
+      className={cn(
+        "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold border transition-all uppercase tracking-tight",
+        active
+          ? "bg-indigo-600 border-indigo-600 text-white shadow-sm"
+          : "bg-white border-slate-200 text-slate-500 hover:border-slate-300",
+      )}
     >
+      {icon}
       {label}
     </button>
   );

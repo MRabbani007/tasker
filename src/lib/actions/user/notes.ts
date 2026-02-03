@@ -91,7 +91,6 @@ export async function updateNote(formData: unknown) {
       data: {
         title: parsed.title,
         details: parsed.details,
-        openedAt: parsed.openedAt,
         pinnedAt: parsed.pinnedAt,
         deletedAt: parsed.deletedAt,
       },
@@ -121,6 +120,35 @@ export async function toggleOpenNote({
       where: { id },
       data: {
         openedAt,
+      },
+    });
+
+    revalidatePath("/notes");
+
+    return success(null);
+  } catch (error) {
+    return fail(500, "Server Error");
+  }
+}
+
+export async function togglePinNote({
+  id,
+  pinnedAt,
+}: {
+  id: string;
+  pinnedAt: Date | null;
+}) {
+  try {
+    const user = await getCurrentUser();
+
+    if (!user) {
+      return fail(403, "Un-Authorized");
+    }
+
+    await prisma.note.update({
+      where: { id },
+      data: {
+        pinnedAt,
       },
     });
 

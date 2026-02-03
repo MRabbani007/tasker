@@ -1,177 +1,138 @@
 "use client";
 
-import { getDueDateStatement } from "@/lib/dateFunctions";
-import { useEffect, useRef, useState } from "react";
-import toast from "react-hot-toast";
-import { LuBellRing } from "react-icons/lu";
-import { Task } from "../../../generated/prisma/client";
-import { useDebounce } from "@/hooks/useDebounce";
-import { toggleTaskCompleted } from "@/lib/actions/user/tasks";
-import Link from "next/link";
-import { useUser } from "@/context/UserContext";
-import clsx from "clsx";
+import {
+  CheckCircle2,
+  Circle,
+  Link as LinkIcon,
+  MoreVertical,
+  Hash,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
+import { Task } from "../../../generated/prisma/client";
+import UserFormTrigger from "@/components/UserFormTrigger";
 
-const priorityColor: Record<number, string> = {
-  1: "#0284c7",
-  2: "#16a34a",
-  3: "#eab308",
-  4: "#f97316",
-  5: "#dc2626",
-};
-
-const bgMap: Record<string, string> = {
-  "bg-red-600": "bg-red-100",
-  "bg-sky-600": "bg-sky-100",
-  "bg-green-600": "bg-green-100",
-  "bg-yellow-500": "bg-yellow-100",
-  "bg-orange-600": "bg-orange-100",
-  "bg-zinc-600": "bg-zinc-100",
+// More professional priority map using Slate/Indigo variants
+const priorityConfig: Record<number, { color: string; label: string }> = {
+  1: { color: "bg-slate-200", label: "Low" },
+  2: { color: "bg-emerald-500", label: "Normal" },
+  3: { color: "bg-amber-500", label: "Medium" },
+  4: { color: "bg-orange-500", label: "High" },
+  5: { color: "bg-rose-500", label: "Urgent" },
 };
 
 export default function CardTask({ task }: { task: Task }) {
-  const { setShowForm, setEditItem } = useUser();
-
   const [completed, setCompleted] = useState(task.completed);
-  const debouncedCompleted = useDebounce(completed, 600);
-  const mounted = useRef(false);
 
-  /** ---------------- Completion Sync ---------------- */
-  useEffect(() => {
-    const ToggleCompleted = async () => {
-      try {
-        console.log("clicked");
-        if (!mounted.current || debouncedCompleted === task.completed) return;
-
-        const formData = new FormData();
-        formData.append("id", String(task.id));
-        formData.append("completed", String(debouncedCompleted));
-        formData.append(
-          "completedAt",
-          String(debouncedCompleted ? new Date() : null),
-        );
-
-        const res = await toggleTaskCompleted(formData);
-
-        console.log(res);
-        if (res.status === 200) {
-          toast.success("Task saved");
-        }
-      } catch {
-        toast.error("Failed to update task");
-      }
-    };
-
-    ToggleCompleted();
-  }, [debouncedCompleted]);
-
-  useEffect(() => {
-    mounted.current = true;
-  }, []);
-
-  useEffect(() => {
-    const temp = () => {
-      setCompleted(task.completed);
-    };
-
-    temp();
-  }, [task.completed]);
-
-  /** ---------------- Dates ---------------- */
-  const dueDate = task.dueOn ? new Date(task.dueOn) : null;
-  const dueInfo = dueDate ? getDueDateStatement(dueDate) : null;
-
-  const bgClass = bgMap[task.color ?? ""] ?? "bg-zinc-100";
-  const priorityDot = priorityColor[task.priority] ?? "#0284c7";
-
-  const openEdit = () => {
-    setShowForm("EDIT_TASK");
-    setEditItem({ type: "task", data: task });
-  };
+  // Priority config as defined before
+  const priority = priorityConfig[task.priority] || priorityConfig[1];
 
   return (
     <div
-      onClick={() => console.log(task)}
-      className="relative flex flex-col rounded-2xl overflow-hidden group bg-white shadow-sm hover:shadow-md transition"
+      className={cn(
+        "group relative flex flex-col rounded-2xl border bg-white transition-all duration-300",
+        "hover:shadow-xl hover:shadow-slate-200/40",
+        completed
+          ? "border-slate-100 bg-slate-50/50"
+          : "border-slate-200 shadow-sm",
+      )}
     >
-      {/* Header */}
-      <div className={clsx("flex items-center gap-3 p-4", bgClass)}>
-        {/* Checkbox */}
-        <label className="relative flex items-center">
-          <input
-            type="checkbox"
-            checked={completed}
-            onChange={() => setCompleted((v) => !v)}
-            className="sr-only"
-          />
-          <span className="w-5 h-5 rounded-full border-2 border-blue-500 flex items-center justify-center">
-            <span
-              className={cn(
-                "w-3 h-3 rounded-full bg-blue-500 scale-0 transition",
-                completed ? "scale-100" : "scale-0",
-              )}
-            />
-          </span>
-        </label>
-
-        {/* Title */}
-        <div className="flex-1 min-w-0 cursor-pointer" onClick={openEdit}>
-          <p className="font-semibold truncate text-zinc-900">
-            {task.title || "Untitled task"}
-          </p>
-          {dueInfo && (
-            <p className="text-xs text-zinc-600">{dueInfo.message}</p>
-          )}
+      {/* 1. Optional Title as a "Topic Badge" at the very top */}
+      {task.title && (
+        <div className="px-4 pt-3 flex items-center gap-1.5">
+          <div className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-indigo-50 border border-indigo-100/50 max-w-[80%]">
+            <Hash className="h-3 w-3 text-indigo-400" />
+            <span className="text-[10px] font-bold text-indigo-600 uppercase truncate">
+              {task.title}
+            </span>
+          </div>
         </div>
+      )}
 
-        <LuBellRing className="text-zinc-600" />
-      </div>
-
-      {/* Body */}
-      <div className="flex flex-col gap-2 p-4">
-        {task.task && (
-          <p
-            onClick={openEdit}
-            className="text-sm text-zinc-800 line-clamp-2 cursor-pointer"
-          >
-            {task.task}
-          </p>
-        )}
-
-        {task.details && (
-          <p className="text-xs text-zinc-600 line-clamp-3">{task.details}</p>
-        )}
-
-        {task.notes && (
-          <p className="text-xs text-cyan-800 line-clamp-2">{task.notes}</p>
-        )}
-      </div>
-
-      {/* Footer */}
-      <div className="flex items-center gap-3 px-4 pb-4 mt-auto">
-        {/* Priority */}
-        <div className="flex items-center gap-1 text-xs">
-          <span
-            style={{ backgroundColor: priorityDot }}
-            className={clsx(
-              "w-3 h-3 rounded-full",
-              task.priority >= 4 && "animate-pulse",
+      <div className="p-4 flex flex-col gap-3">
+        {/* 2. Main Task Area: Toggle + Content */}
+        <div className="flex items-start gap-3">
+          <button
+            onClick={() => setCompleted(!completed)}
+            className={cn(
+              "mt-0.5 shrink-0 transition-all duration-200 hover:scale-110",
+              completed
+                ? "text-emerald-500"
+                : "text-slate-300 hover:text-indigo-500",
             )}
-          />
-          <span>{task.priority}</span>
+          >
+            {completed ? (
+              <CheckCircle2
+                size={22}
+                fill="currentColor"
+                className="text-emerald-500 fill-emerald-50/50"
+              />
+            ) : (
+              <Circle size={22} />
+            )}
+          </button>
+          <UserFormTrigger
+            type="container"
+            value="EDIT_TASK"
+            editItem={{ type: "task", data: task }}
+            className="flex-1 min-w-0 pt-0.5"
+          >
+            <p
+              className={cn(
+                "text-base font-semibold leading-snug text-slate-800 cursor-pointer transition-colors",
+                completed && "line-through text-slate-400",
+              )}
+            >
+              {task.task || "New Task..."}
+            </p>
+
+            {/* 3. Details shown directly under the main task */}
+            {task.details && (
+              <p className="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">
+                {task.details}
+              </p>
+            )}
+          </UserFormTrigger>
         </div>
 
-        <div className="flex-1" />
+        {/* 4. Metadata Footer */}
+        <div className="flex items-center justify-between mt-1 pl-9">
+          <div className="flex items-center gap-4">
+            {/* Priority Indicator */}
+            <div className="flex items-center gap-1.5">
+              <div className={cn("w-2 h-2 rounded-full", priority.color)} />
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">
+                {priority.label}
+              </span>
+            </div>
 
-        {task.link && (
-          <Link
-            href={task.link}
-            target="_blank"
-            className="text-xs text-blue-600 hover:underline truncate max-w-30"
-          >
-            {task.linkText ?? task.link}
-          </Link>
-        )}
+            {/* Due Date Info */}
+            {/* {dueInfo && (
+              <div className={cn(
+                "flex items-center gap-1 text-[10px] font-bold uppercase",
+                task.priority >= 4 && !completed ? "text-rose-500" : "text-slate-400"
+              )}>
+                <Clock size={12} />
+                <span>{dueInfo.message}</span>
+              </div>
+            )} */}
+          </div>
+
+          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            {task.link && (
+              <a
+                href={task.link}
+                target="_blank"
+                className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 transition-colors"
+              >
+                <LinkIcon size={14} />
+              </a>
+            )}
+            <button className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100">
+              <MoreVertical size={14} />
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

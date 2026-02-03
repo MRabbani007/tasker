@@ -7,6 +7,7 @@ import { getTasks } from "@/lib/actions/user/tasks";
 import { extractFilters } from "@/lib/helpers";
 import { Plus } from "lucide-react";
 import TaskFilters from "@/features/tasks/TaskFilters";
+import CardTaskOld from "@/features/tasks/CardTaskOld";
 
 const FILTER_MAP = {
   query: "query",
@@ -36,47 +37,61 @@ export default async function TasksPage({
   });
 
   return (
-    <main className="flex-1 flex flex-col p-4 md:p-6">
-      {/* Page header */}
-      <div className="flex flex-col gap-4">
-        {/* Top row */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">
-              My Tasks
-            </h1>
-            <p className="text-sm text-gray-400">
-              Everything you need to stay on track.
-            </p>
+    <main className="flex-1 flex flex-col gap-8 p-6 lg:p-10 max-w-7xl mx-auto w-full">
+      {/* Header Area */}
+      <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">
+            Task Board
+          </h1>
+          <div className="flex items-center gap-2 text-slate-500 font-medium">
+            <span className="flex h-5 px-1.5 items-center justify-center rounded bg-slate-100 text-[11px] font-bold">
+              {count}
+            </span>
+            <p className="text-sm">Active objectives for this period</p>
           </div>
-          <UserFormTrigger type="container" value="CREATE_TASK">
-            <button className="inline-flex items-center gap-2 rounded-xl bg-linear-to-br from-cyan-500 to-blue-600 px-4 py-2 text-sm font-medium text-white shadow hover:opacity-90">
-              <Plus size={16} />
-              Add task
-            </button>
-          </UserFormTrigger>
         </div>
-        <div className="flex items-center gap-4">
-          {/* Task count */}
-          <p className="text-sm text-gray-400">
-            {count} {count === 1 ? "task" : "tasks"}
-          </p>
-          <TaskFilters />
+
+        <UserFormTrigger type="container" value="CREATE_TASK">
+          <button className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 text-white font-semibold shadow-lg shadow-indigo-100 hover:bg-indigo-700 active:scale-95 transition-all">
+            <Plus size={18} />
+            <span>Add Task</span>
+          </button>
+        </UserFormTrigger>
+      </header>
+
+      {/* Filter Bar */}
+      <div className="flex items-center justify-between p-2 bg-slate-50 border border-slate-200 rounded-2xl">
+        <TaskFilters />
+        <div className="flex items-center gap-2 pr-2">
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+            Sort: Default
+          </span>
         </div>
       </div>
+
+      {/* Grid Content */}
       <div className="flex-1">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 py-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {data.map((task) => (
             <CardTask key={task.id} task={task} />
           ))}
         </div>
       </div>
-      <Pagination
-        page={page}
-        count={count}
-        className={"mx-auto"}
-        itemsPerPage={itemsPerPage}
-      />
+
+      {/* Repeated */}
+      {/* <div className="flex-1">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 py-6">
+          {data.map((task) => (
+            <CardTaskOld key={task.id} task={task} />
+          ))}
+        </div>
+      </div> */}
+
+      <div className="py-10 border-t border-slate-100">
+        <Pagination page={page} count={count} itemsPerPage={itemsPerPage} />
+      </div>
+
       <FormTask />
       <FormTaskList />
     </main>

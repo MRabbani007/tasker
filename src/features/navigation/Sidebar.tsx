@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { MdOutlineKeyboardDoubleArrowRight } from "react-icons/md";
+import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 import {
   Calendar,
@@ -12,163 +12,160 @@ import {
   NotebookPen,
   NotepadText,
   Settings,
-  UserRound,
-  UserRoundCog,
-  UsersRound,
+  ChevronLeft,
+  ChevronRight,
+  ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const items = [
-  {
-    label: "My Tasks",
-    icon: <CircleCheckBig size={25} />,
-    url: "/tasks",
-  },
-  {
-    label: "My Lists",
-    url: "/lists",
-    icon: <ListChecks size={25} />,
-  },
-  {
-    label: "Calendar",
-    icon: <Calendar size={25} />,
-    url: "/calendar",
-  },
-  {
-    label: "Kanban",
-    icon: <ChartGantt size={25} />,
-    url: "/kanban",
-  },
-  {
-    label: "Journal",
-    url: "/journal",
-    icon: <NotepadText size={25} />,
-  },
-  {
-    label: "Notes",
-    url: "/notes",
-    icon: <NotebookPen size={25} />,
-  },
+  { label: "My Tasks", icon: CircleCheckBig, url: "/tasks" },
+  { label: "My Lists", icon: ListChecks, url: "/lists" },
+  { label: "Calendar", icon: Calendar, url: "/calendar" },
+  { label: "Kanban", icon: ChartGantt, url: "/kanban" },
+  { label: "Journal", icon: NotepadText, url: "/journal" },
+  { label: "Notes", icon: NotebookPen, url: "/notes" },
 ];
 
-const adminItems = [
-  {
-    label: "Admin",
-    icon: <UserRoundCog size={28} />,
-    url: "",
-    children: [
-      {
-        label: "Users",
-        url: "/admin/users",
-        icon: <UsersRound size={25} />,
-      },
-      {
-        label: "Lists",
-        url: "/admin/lists",
-        icon: <ListChecks size={25} />,
-      },
-    ],
-  },
-];
+export default function Sidebar({ user }: { user?: any }) {
+  const [collapsed, setCollapsed] = useState(false);
+  const pathname = usePathname();
+  const isAdmin = true; // Logic check
 
-export default function Sidebar({ user }: { user?: User }) {
-  const [collapsed, setCollapsed] = useState(true);
-
-  const isAdmin = false;
-
-  let menuItems = isAdmin ? [...items, ...adminItems] : [...items];
+  // 1. Keyboard Shortcut Logic (⌘+B or Ctrl+B)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "b") {
+        e.preventDefault();
+        setCollapsed((prev) => !prev);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   return (
     <aside
-      className={
-        (collapsed ? "" : "w-40") +
-        " hidden lg:flex flex-col bg-cyan-950 text-zinc-100 duration-300 py-4"
-      }
+      className={cn(
+        "hidden lg:flex flex-col bg-white border-r border-slate-200 duration-300 relative transition-all ease-in-out",
+        collapsed ? "w-20" : "w-65",
+      )}
     >
-      <Link
-        href={"/dashboard"}
-        className="flex items-center justify-center py-2 px-2 rounded-full hover:bg-zinc-800 duration-200"
-      >
-        <UserRound size={25} />
-        <span
-          className={`whitespace-nowrap ${
-            collapsed ? "w-0 invisible opacity-0" : "w-20 ml-2"
-          } transition-all duration-300`}
+      {/* 2. Enhanced Toggle with Shortcut Hint */}
+      <div className="group/toggle absolute -right-3 top-10 z-50">
+        <button
+          onClick={() => setCollapsed(!collapsed)}
+          className="flex h-6 w-6 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-sm hover:bg-indigo-600 hover:text-white transition-all"
         >
-          {user?.firstName?.[0]}
-        </span>
-      </Link>
-      <button
-        title={collapsed ? "Expand" : "Collapse"}
-        onClick={() => setCollapsed((curr) => !curr)}
-        className="mx-auto py-2 px-4 rounded-md bg-zinc-20"
-      >
-        <MdOutlineKeyboardDoubleArrowRight
-          size={20}
-          className={collapsed ? "" : "rotate-180" + " duration-200 "}
-        />
-      </button>
-      <div className="flex-1 flex flex-col">
-        {menuItems.map((item, idx) => (
-          <Link
-            key={idx}
-            href={item.url}
-            className={cn(
-              "hover:bg-zinc-800 relative py-2 px-2 flex items-center gap-2 duration-200",
-              collapsed ? " flex justify-center " : "",
-            )}
-          >
-            {item.icon}
-            <span
-              className={`whitespace-nowrap ${
-                collapsed ? "hidden" : "block"
-              } transition-all duration-300`}
-            >
-              {item.label}
-            </span>
-          </Link>
-        ))}
+          {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+        </button>
+
+        {/* Tooltip hint */}
+        <div className="absolute left-8 top-1/2 -translate-y-1/2 px-2 py-1 bg-slate-800 text-white text-[10px] font-bold rounded opacity-0 group-hover/toggle:opacity-100 pointer-events-none transition-opacity whitespace-nowrap shadow-xl">
+          {collapsed ? "Expand" : "Collapse"}{" "}
+          <span className="text-slate-400 ml-1">⌘B</span>
+        </div>
       </div>
-      <div className="border-t border-zinc-100 p-3 dark:border-zinc-800">
-        <nav className="space-y-1">
-          <Link
-            href="/admin/settings"
-            className={cn(
-              "flex items-center gap-3 rounded-xl px-3 py-2.5 text-zinc-500 transition-all hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100",
-              collapsed && "justify-center",
-            )}
-          >
-            <Settings size={20} className="shrink-0" />
-            {!collapsed && (
-              <span className="text-sm font-medium">Settings</span>
-            )}
-          </Link>
 
-          <button
-            onClick={() => {
-              // onLogout?.();
-              // router.push("/login");
-            }}
-            className={cn(
-              "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-red-500 transition-all hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20",
-              collapsed && "justify-center",
-            )}
-          >
-            <LogOut size={20} className="shrink-0" />
-            {!collapsed && <span className="text-sm font-medium">Logout</span>}
-          </button>
-        </nav>
+      {/* Profile Section */}
+      <div className={cn("p-6 mb-2", collapsed ? "px-4" : "px-6")}>
+        <Link href="/dashboard" className="flex items-center gap-3 group">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-indigo-200 shadow-lg group-hover:scale-105 transition-transform">
+            <span className="font-bold">{user?.firstName?.[0] || "U"}</span>
+          </div>
+          {!collapsed && (
+            <div className="flex flex-col overflow-hidden">
+              <span className="text-sm font-bold text-slate-800 truncate">
+                {user?.firstName || "User"}
+              </span>
+              <span className="text-[10px] font-medium text-indigo-500 uppercase tracking-wider">
+                Pro Plan
+              </span>
+            </div>
+          )}
+        </Link>
+      </div>
 
-        {!collapsed && (
-          <div className="mt-4 px-3 py-4 rounded-xl bg-zinc-50 dark:bg-zinc-800/50">
-            <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
-              Logged in as
-            </p>
-            <p className="mt-1 text-sm font-bold text-zinc-900 dark:text-zinc-100 truncate">
-              {user?.firstName}
+      {/* Navigation Items */}
+      <nav className="flex-1 space-y-1 px-3">
+        {items.map((item) => {
+          const isActive = pathname === item.url;
+          return (
+            <Link
+              key={item.url}
+              href={item.url}
+              className={cn(
+                "group flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-200",
+                isActive
+                  ? "bg-indigo-50 text-indigo-600"
+                  : "text-slate-500 hover:bg-slate-50 hover:text-slate-900",
+              )}
+            >
+              <item.icon
+                size={20}
+                className={cn(
+                  "shrink-0",
+                  isActive ? "text-indigo-600" : "group-hover:text-indigo-500",
+                )}
+              />
+              {!collapsed && (
+                <span className="text-sm font-medium whitespace-nowrap">
+                  {item.label}
+                </span>
+              )}
+              {isActive && !collapsed && (
+                <div className="ml-auto h-1.5 w-1.5 rounded-full bg-indigo-600" />
+              )}
+            </Link>
+          );
+        })}
+
+        {/* Admin Section */}
+        {isAdmin && !collapsed && (
+          <div className="pt-4 pb-2 px-3">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
+              Admin
             </p>
           </div>
         )}
+        {isAdmin && (
+          <Link
+            href="/admin/users"
+            className={cn(
+              "group flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all",
+              pathname.startsWith("/admin")
+                ? "bg-slate-100 text-slate-900"
+                : "text-slate-500 hover:bg-slate-50",
+            )}
+          >
+            <ShieldCheck size={20} className="shrink-0" />
+            {!collapsed && <span className="text-sm font-medium">System</span>}
+          </Link>
+        )}
+      </nav>
+
+      {/* Bottom Actions */}
+      <div className="border-t border-slate-100 p-4 space-y-1">
+        <Link
+          href="/settings"
+          className={cn(
+            "flex items-center gap-3 rounded-xl px-3 py-2.5 text-slate-500 transition-all hover:bg-slate-50",
+            collapsed && "justify-center",
+          )}
+        >
+          <Settings size={20} className="shrink-0" />
+          {!collapsed && <span className="text-sm font-medium">Settings</span>}
+        </Link>
+
+        <button
+          className={cn(
+            "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-rose-500 transition-all hover:bg-rose-50",
+            collapsed && "justify-center",
+          )}
+        >
+          <LogOut size={20} className="shrink-0" />
+          {!collapsed && <span className="text-sm font-medium">Logout</span>}
+        </button>
       </div>
     </aside>
   );
