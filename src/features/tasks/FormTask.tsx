@@ -50,7 +50,17 @@ export default function FormTask() {
   // Sync data on Edit
   useEffect(() => {
     if (isOpen && editItem?.type === "task") {
-      reset({ ...T_Task, ...editItem.data });
+      reset({
+        ...T_Task,
+        ...editItem.data,
+        dueOn: editItem.data.dueAt
+          ? editItem.data.dueAt.toISOString().slice(0, 10)
+          : undefined,
+
+        dueAt: editItem.data.dueAt
+          ? editItem.data.dueAt.toISOString().slice(11, 16)
+          : undefined,
+      });
     }
   }, [isOpen, editItem, reset]);
 
@@ -129,7 +139,7 @@ export default function FormTask() {
             onClick={() => toggle("color")}
             active={visibility.color}
           />
-          <div className="h-4 w-[1px] bg-slate-200 mx-1" />
+          <div className="h-4 w-px bg-slate-200 mx-1" />
           <button
             type="button"
             onClick={() => (allVisible ? hideAll() : showAll())}

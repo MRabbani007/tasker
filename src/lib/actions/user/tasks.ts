@@ -88,7 +88,6 @@ export async function createTask(formData: unknown) {
       sortIndex: normalizeNumber(raw.sortIndex),
       plannerSortIndex: normalizeNumber(raw.plannerSortIndex),
       dueOn: normalizeDate(raw.dueOn),
-      dueAt: normalizeDate(raw.dueAt),
       completedAt: null,
       deletedAt: null,
     });
@@ -98,6 +97,18 @@ export async function createTask(formData: unknown) {
     }
 
     const parsed = result.data;
+
+    let dueAt: Date | null = null;
+
+    if (parsed.dueOn) {
+      const date = new Date(parsed.dueOn);
+      const time = parsed.dueAt ?? "23:59";
+
+      const [h, m] = time.split(":").map(Number);
+
+      date.setHours(h, m, 0, 0);
+      dueAt = date;
+    }
 
     const prismaData: TaskCreateInput = {
       title: parsed.title,
@@ -110,10 +121,10 @@ export async function createTask(formData: unknown) {
       link: parsed.link,
       linkText: parsed.linkText,
       status: parsed.status,
-      dueAt: parsed.dueAt,
+      dueAt,
       dueOn: parsed.dueOn,
-      completed: parsed.completed,
-      completedAt: parsed.completedAt,
+      completed: false,
+      completedAt: null,
       plannerSortIndex: parsed.plannerSortIndex,
       user: { connect: { id: user.id } },
     };
@@ -151,7 +162,6 @@ export async function updateTask(formData: unknown) {
       sortIndex: normalizeNumber(raw.sortIndex),
       plannerSortIndex: normalizeNumber(raw.plannerSortIndex),
       dueOn: normalizeDate(raw.dueOn),
-      dueAt: normalizeDate(raw.dueAt),
       completedAt: null,
       deletedAt: null,
     });
@@ -161,6 +171,18 @@ export async function updateTask(formData: unknown) {
     }
 
     const parsed = result.data;
+
+    let dueAt: Date | null = null;
+
+    if (parsed.dueOn) {
+      const date = new Date(parsed.dueOn);
+      const time = parsed.dueAt ?? "23:59";
+
+      const [h, m] = time.split(":").map(Number);
+
+      date.setHours(h, m, 0, 0);
+      dueAt = date;
+    }
 
     const data = await prisma.task.update({
       where: { id: parsed.id },
@@ -174,7 +196,7 @@ export async function updateTask(formData: unknown) {
         link: parsed.link,
         linkText: parsed.linkText,
         status: parsed.status,
-        dueAt: parsed.dueAt,
+        dueAt,
         dueOn: parsed.dueOn,
         plannerSortIndex: parsed.plannerSortIndex,
       },

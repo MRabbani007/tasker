@@ -27,7 +27,7 @@ const items = [
   { label: "Notes", icon: NotebookPen, url: "/notes" },
 ];
 
-export default function Sidebar({ user }: { user?: any }) {
+export default function Sidebar({ user }: { user?: { firstName: string } }) {
   const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
   const isAdmin = true; // Logic check

@@ -23,10 +23,10 @@ export const TaskSchema = z.object({
   createdAt: dateSchema,
   updatedAt: dateSchema,
 
-  dueOn: dateSchema.nullable(),
-  dueAt: dateSchema.nullable(),
-  completedAt: dateSchema.nullable(),
-  deletedAt: dateSchema.nullable(),
+  dueOn: z.coerce.date().optional().nullable(),
+  dueAt: z.string().optional(),
+  completedAt: z.coerce.date().optional().nullable(),
+  deletedAt: z.coerce.date().optional().nullable(),
 
   taskListId: z.string("TaskList is required").nullable().optional(),
 });

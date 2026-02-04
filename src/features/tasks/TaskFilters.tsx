@@ -92,10 +92,10 @@ export default function TaskFilters() {
             whileTap={{ scale: 0.95 }}
             onClick={() => applyFilter(filter.params)}
             className={cn(
-              "group flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium transition",
+              "group flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium transition duration-200",
               active
                 ? "bg-white/10 text-white"
-                : "text-gray-400 hover:bg-white/5 hover:text-white",
+                : "text-gray-400 hover:bg-white/5 hover:text-gray-700",
             )}
             title={filter.label}
           >

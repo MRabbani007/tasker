@@ -1,3 +1,12 @@
+import {
+  isToday,
+  isTomorrow,
+  isYesterday,
+  isPast,
+  format,
+  parseISO,
+} from "date-fns";
+
 export function formDataToObject(fd: FormData) {
   const obj: Record<string, unknown> = {};
   fd.forEach((value, key) => {
@@ -107,4 +116,39 @@ function mergeDateAndTime(date?: string, time?: string) {
     d.setHours(h, m, 0, 0);
   }
   return d;
+}
+
+type DueInfo = {
+  message: string;
+  isOverdue: boolean;
+  isToday: boolean;
+};
+
+export function getDueInfo(dueOn?: string, dueAt?: string): DueInfo | null {
+  if (!dueOn) return null;
+
+  // Build a Date safely
+  const date = parseISO(`${dueOn}T${dueAt ?? "23:59"}`);
+
+  const now = new Date();
+
+  const overdue = isPast(date) && !isToday(date);
+
+  let message: string;
+
+  if (isToday(date)) {
+    message = dueAt ? `Today · ${format(date, "HH:mm")}` : "Today";
+  } else if (isTomorrow(date)) {
+    message = "Tomorrow";
+  } else if (isYesterday(date)) {
+    message = "Yesterday";
+  } else {
+    message = format(date, dueAt ? "MMM d · HH:mm" : "MMM d");
+  }
+
+  return {
+    message,
+    isOverdue: overdue,
+    isToday: isToday(date),
+  };
 }

@@ -6,11 +6,13 @@ import {
   Link as LinkIcon,
   MoreVertical,
   Hash,
+  Clock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { Task } from "../../../generated/prisma/client";
 import UserFormTrigger from "@/components/UserFormTrigger";
+import { getDueInfo } from "@/lib/helpers";
 
 // More professional priority map using Slate/Indigo variants
 const priorityConfig: Record<number, { color: string; label: string }> = {
@@ -26,6 +28,10 @@ export default function CardTask({ task }: { task: Task }) {
 
   // Priority config as defined before
   const priority = priorityConfig[task.priority] || priorityConfig[1];
+  const dueInfo = getDueInfo(
+    task.dueOn?.toISOString().split("T")[0],
+    task.dueAt?.toISOString().split("T")[1],
+  );
 
   return (
     <div
@@ -107,15 +113,19 @@ export default function CardTask({ task }: { task: Task }) {
             </div>
 
             {/* Due Date Info */}
-            {/* {dueInfo && (
-              <div className={cn(
-                "flex items-center gap-1 text-[10px] font-bold uppercase",
-                task.priority >= 4 && !completed ? "text-rose-500" : "text-slate-400"
-              )}>
+            {dueInfo && (
+              <div
+                className={cn(
+                  "flex items-center gap-1 text-[10px] font-bold uppercase",
+                  task.priority >= 4 && !completed
+                    ? "text-rose-500"
+                    : "text-slate-400",
+                )}
+              >
                 <Clock size={12} />
                 <span>{dueInfo.message}</span>
               </div>
-            )} */}
+            )}
           </div>
 
           <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
