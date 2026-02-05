@@ -1,88 +1,94 @@
-import DailyReflectionForm from "@/features/journal/DailyReflectionForm";
-import { JournalForm } from "@/features/journal/JournalForm";
-import React from "react";
+"use client";
 
-export interface JournalEntry {
-  id?: string;
-  date: string;
-  mood: "great" | "good" | "okay" | "bad" | "awful" | string;
-  energyLevel?: number; // 1-10
-  bigThreeWins?: string[];
-  gratitude?: string[];
-  dailyLearning?: string;
-  freeWriting?: string;
-  win: string;
-}
+import { DailySnapshotCard } from "@/features/journal/DailySnapshotCard";
+import { ReflectionPanel } from "@/features/journal/ReflextionPanel";
+import { acrylic } from "@/lib/shared";
+import { DaySnapshot, JournalItem } from "@/lib/types";
 
-const JournalEntryCard: React.FC<{ entry: JournalEntry }> = ({ entry }) => (
-  <div className="p-4 border-l-4 border-blue-500 bg-gray-50 dark:bg-gray-900 rounded-r-lg mb-4">
-    <div className="flex justify-between items-start mb-2">
-      <span className="font-bold text-gray-900 dark:text-white">
-        {entry.date}
-      </span>
-      <span className="text-xl">{entry.mood === "great" ? "🤩" : "😐"}</span>
-    </div>
-    <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
-      {entry.win || "No additional notes..."}
-    </p>
-  </div>
-);
-
-{
-  /* <div
-                className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800"
-              >
-                <span className="text-2xl">{item.mood}</span>
-                <div>
-                  <p className="text-xs font-bold uppercase text-gray-400">
-                    {item.date}
-                  </p>
-                  <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-1">
-                    {item.win}
-                  </p>
-                </div>
-              </div> */
-}
-
-const history = [
-  { date: "Yesterday", mood: "🔥", win: "Finished the API integration" },
-  { date: "Feb 2", mood: "😊", win: "Consistent 2-hour deep work" },
-  { date: "Feb 1", mood: "😐", win: "Read 20 pages of my book" },
+const mockItems: JournalItem[] = [
+  {
+    id: "1",
+    type: "task",
+    content: "Finish Calendar Header",
+    time: "14:30",
+    meta: { list: "Work", priority: "high" },
+  },
+  {
+    id: "2",
+    type: "note",
+    content: "Felt more focused after lunch",
+  },
+  {
+    id: "3",
+    type: "highlight",
+    content: "Calendar UI finally feels clean",
+  },
 ];
 
-export default async function JournalPage() {
-  // You would fetch your data here using Prisma
-  // const entries = await prisma.journalEntry.findMany({ orderBy: { date: 'desc' } });
+const typeIcon = {
+  task: "✔",
+  note: "📝",
+  highlight: "⭐",
+  routine: "🔁",
+};
 
+const snapshot: DaySnapshot = {
+  date: new Date().toISOString(),
+  completedCount: 7,
+  energy: 4,
+  highlight: "Fixed Calendar UI",
+};
+
+export default function JournalPage() {
   return (
-    <main className="container mx-auto p-6 max-w-6xl">
-      <header className="mb-10">
-        <h1 className="text-4xl font-extrabold text-gray-900 dark:text-white">
-          Journal
-        </h1>
-        <p className="text-gray-500 mt-2">
-          Reflect on your progress and capture daily wins.
-        </p>
-      </header>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Column: Form */}
-        <div className="lg:col-span-2">
-          <JournalForm />
+    <div className="mx-auto max-w-4xl px-4 py-6 space-y-6">
+      <header
+        className={`${acrylic} sticky top-0 z-20 rounded-2xl px-4 py-3 flex items-center justify-between`}
+      >
+        <div>
+          <h1 className="text-lg font-semibold text-indigo-950">
+            Daily Journal
+          </h1>
+          <p className="text-sm text-indigo-700/70">
+            {new Date().toDateString()}
+          </p>
         </div>
 
-        {/* Right Column: Recent Activity Feed */}
-        <aside className="space-y-6">
-          <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">
-            Past Reflections
-          </h2>
-          <div className="space-y-4">
-            {history.map((item, idx) => (
-              <JournalEntryCard key={idx} entry={item} />
-            ))}
+        <div className="flex items-center gap-3">
+          <span className="text-xl">😌</span>
+          <button className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 transition">
+            + Note
+          </button>
+        </div>
+      </header>
+      <DailySnapshotCard snapshot={snapshot} />
+      <section className="relative pl-6 space-y-4">
+        <div className="absolute left-2 top-0 bottom-0 w-px bg-indigo-300/40" />
+        {mockItems.map((item) => (
+          <div key={item.id} className="relative flex gap-4">
+            <div className="relative z-10 flex h-6 w-6 items-center justify-center rounded-full bg-indigo-600 text-white text-xs">
+              {typeIcon[item.type as keyof typeof typeIcon]}
+            </div>
+
+            <div
+              className={`${acrylic} rounded-xl px-4 py-3 flex-1 hover:bg-white/80 transition`}
+            >
+              {item.time && (
+                <p className="text-xs text-indigo-700/60">{item.time}</p>
+              )}
+
+              <p className="text-sm text-indigo-950">{item.content}</p>
+
+              {item.meta?.list && (
+                <p className="text-xs text-indigo-700/60 mt-1">
+                  {item.meta.list}
+                </p>
+              )}
+            </div>
           </div>
-        </aside>
-      </div>
-    </main>
+        ))}
+      </section>
+      <ReflectionPanel />
+    </div>
   );
 }

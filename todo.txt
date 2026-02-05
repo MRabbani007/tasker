@@ -16,3 +16,14 @@ cmd k: searchmodal
 cmd /: tasklistsidebar
 cmd t: create task
 cmd l: create list
+
+journal:
+- completed task
+- quick notes
+- free reflection
+
+- Routine Completion
+- Highlight (user-marked important moment)
+
+The Design Style: "Modern Acrylic"
+color palette Indigo Slate & Frosted Pearl
