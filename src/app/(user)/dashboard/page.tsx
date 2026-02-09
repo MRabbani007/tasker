@@ -11,6 +11,19 @@ import {
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { getCurrentUser } from "@/lib/auth/utils";
+import type { Metadata } from "next";
+import { ReactNode } from "react";
+
+export const metadata: Metadata = {
+  title: "Dashboard",
+  description:
+    "Get an overview of your tasks, notes, journals, and activity in one unified dashboard.",
+  openGraph: {
+    title: "Dashboard · Tasker",
+    description:
+      "Your productivity overview — tasks, notes, and journals at a glance.",
+  },
+};
 
 export default async function DashboardPage() {
   // Mock data - replace with your prisma calls
@@ -172,7 +185,7 @@ function ToolCard({
 }: {
   title: string;
   desc: string;
-  icon: any;
+  icon: ReactNode;
   href: string;
   color: string;
 }) {

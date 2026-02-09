@@ -1,3 +1,4 @@
+import { CreateJournalEntryInput } from "./schemas/journal";
 import { TaskInput } from "./schemas/task";
 import { TaskListInput } from "./schemas/taskList";
 
@@ -33,4 +34,13 @@ export const T_TaskList: TaskListInput = {
   type: "",
   icon: "",
   sortIndex: 0,
+};
+
+export const T_JournalEntry: CreateJournalEntryInput = {
+  content: "",
+  type: "NOTE",
+  occurredAt: "",
+  occurredOn: new Date(),
+  sortIndex: 0,
+  subject: "",
 };

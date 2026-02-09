@@ -3,6 +3,7 @@
 import InputField from "@/components/ui/InputField";
 import ModalForm from "@/components/ui/ModalForm";
 import { useUser } from "@/context/UserContext";
+import { useCommandShortcut } from "@/hooks/useCommandShortcut";
 import {
   createTaskList,
   deleteTaskList,
@@ -83,6 +84,11 @@ export default function FormTaskList() {
       } catch {}
     }
   };
+
+  useCommandShortcut({ key: "c", alt: false }, () =>
+    setShowForm("CREATE_LIST"),
+  );
+
   return (
     <ModalForm
       title={

@@ -6,7 +6,7 @@ import { forwardRef, InputHTMLAttributes } from "react";
 interface Props extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   className?: string;
-  error?: any; // Compatible with RHF FieldError
+  error?: RHFError; // Compatible with RHF FieldError
 }
 
 const InputField = forwardRef<HTMLInputElement, Props>(

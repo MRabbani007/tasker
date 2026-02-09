@@ -29,7 +29,6 @@ export interface CalendarTask {
 
 export default function Calendar() {
   const params = useSearchParams();
-  const router = useRouter();
 
   const [currentDate, setCurrentDate] = useState(new Date());
 
@@ -68,12 +67,12 @@ export default function Calendar() {
     async function load() {
       setLoading(true);
 
-      const range =
-        view === "month"
-          ? { type: "month", date: currentDate }
-          : view === "week"
-            ? { type: "week", date: currentDate }
-            : { type: "day", date: currentDate };
+      // const range =
+      //   view === "month"
+      //     ? { type: "month", date: currentDate }
+      //     : view === "week"
+      //       ? { type: "week", date: currentDate }
+      //       : { type: "day", date: currentDate };
 
       const { data } = await getTasks({
         //   range,
@@ -98,6 +97,8 @@ export default function Calendar() {
         setFilters={setFilters}
       />
 
+      {loading && null}
+      {completed && null}
       {view === "month" && (
         <MonthView
           date={currentDate}

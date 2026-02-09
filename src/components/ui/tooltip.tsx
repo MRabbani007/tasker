@@ -18,12 +18,16 @@ export function Tooltip({ children }: { children: React.ReactNode }) {
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    // Disable tooltip on touch devices
-    const isTouch =
-      typeof window !== "undefined" &&
-      window.matchMedia("(hover: none)").matches;
+    const temp = () => {
+      // Disable tooltip on touch devices
+      const isTouch =
+        typeof window !== "undefined" &&
+        window.matchMedia("(hover: none)").matches;
 
-    setDisabled(isTouch);
+      setDisabled(isTouch);
+    };
+
+    temp();
   }, []);
 
   const show = () => {

@@ -9,7 +9,7 @@ import {
 export function getDueDateStatement(dueDate?: Date | null) {
   let message = "";
   let displayDate = "";
-  let status = "";
+  const status = "";
   let isOverdue = false;
   let daysDifference = 0;
 

@@ -62,7 +62,7 @@ export default function DailyReflectionForm() {
       {/* The Big Three Wins */}
       <section className="mb-8">
         <label className="block text-sm font-medium mb-3 text-gray-700 dark:text-gray-300">
-          The "Big Three" Wins
+          The &quot;Big Three&quot; Wins
         </label>
         {wins.map((win, i) => (
           <input

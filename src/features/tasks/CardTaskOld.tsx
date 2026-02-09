@@ -3,7 +3,6 @@
 import {
   CheckCircle2,
   Circle,
-  Clock,
   Link as LinkIcon,
   Bell,
   MoreVertical,
@@ -23,9 +22,6 @@ const priorityConfig: Record<number, { color: string; label: string }> = {
 
 export default function CardTaskOld({ task }: { task: Task }) {
   const [completed, setCompleted] = useState(task.completed);
-
-  // Logic for due info...
-  const isUrgent = task.priority >= 4;
 
   return (
     <div

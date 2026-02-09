@@ -1,12 +1,7 @@
 "use client";
 
 import { addDays, addMonths, addWeeks, format } from "date-fns";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Calendar as CalendarIcon,
-  Filter,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, Filter } from "lucide-react";
 import { CalendarFilters, CalendarView } from "./Calendar";
 import { cn } from "@/lib/utils";
 

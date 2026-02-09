@@ -9,7 +9,11 @@ import {
   normalizeDate,
   normalizeNumber,
 } from "@/lib/helpers";
-import { TaskCompleteSchema, TaskSchema } from "@/lib/schemas/task";
+import {
+  MoveTaskSchema,
+  TaskCompleteSchema,
+  TaskSchema,
+} from "@/lib/schemas/task";
 import { revalidatePath } from "next/cache";
 import { Prisma } from "../../../../generated/prisma/client";
 import { TaskCreateInput } from "../../../../generated/prisma/models";
@@ -49,9 +53,15 @@ export async function getTasks({
       ];
     }
 
+    if (filters?.completed && String(filters.completed) === "true") {
+      // whereClause.completed = true;
+    } else {
+      whereClause.completed = false;
+    }
+
     const orderByClause: Prisma.TaskOrderByWithRelationInput | undefined = sort
       ? { [sort.field]: sort.direction }
-      : { sortIndex: "asc" };
+      : { updatedAt: "desc" };
 
     const [data, count] = await prisma.$transaction([
       prisma.task.findMany({
@@ -59,6 +69,7 @@ export async function getTasks({
         take,
         skip,
         orderBy: orderByClause,
+        include: { taskList: { select: { title: true } } },
       }),
       prisma.task.count({
         where: whereClause,
@@ -241,6 +252,39 @@ export async function toggleTaskCompleted(formData: unknown) {
     });
 
     revalidatePath("/lists");
+
+    return success(data, "Task updated");
+  } catch {
+    return fail(500, "Server error");
+  }
+}
+
+export async function moveTask(formData: unknown) {
+  try {
+    const user = await getCurrentUser();
+
+    if (!user) {
+      return failData(403, [], "Un-Authorized");
+    }
+
+    const raw = formDataToObject(formData as FormData);
+
+    const result = MoveTaskSchema.safeParse(raw);
+
+    if (!result.success) {
+      return fail(400, "Missing data");
+    }
+
+    const parsed = result.data;
+
+    const data = await prisma.task.update({
+      where: { id: parsed.id },
+      data: {
+        taskListId: parsed.taskListId,
+      },
+    });
+
+    revalidatePath("/tasks");
 
     return success(data, "Task updated");
   } catch {

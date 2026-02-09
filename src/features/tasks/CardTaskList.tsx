@@ -41,7 +41,8 @@ export default function TaskListCard({
 }) {
   const isPinned = !!taskList.pinnedAt;
   const totalTasks =
-    (taskList.summary.open || 0) + (taskList.summary.completed || 0);
+    Number(taskList.summary.open || 0) +
+    Number(taskList.summary.completed || 0);
   const progress =
     totalTasks > 0
       ? (Number(taskList.summary.completed) / Number(totalTasks)) * 100
@@ -91,7 +92,11 @@ export default function TaskListCard({
       </div>
 
       {/* 3. Progress Section (Visual Delight) */}
-      {!isEmptyList(taskList.summary) && (
+      {!(
+        Number(taskList.summary.open || 0) +
+          Number(taskList.summary.completed || 0) ===
+        0
+      ) && (
         <div className="mt-6 space-y-2">
           <div className="flex justify-between text-[10px] font-bold text-slate-400 uppercase">
             <span>Progress</span>
@@ -114,7 +119,7 @@ export default function TaskListCard({
               Empty list
             </span>
           ) : (
-            pickTopSummaries(taskList.summary).map((item: any) => (
+            pickTopSummaries(taskList.summary).map((item) => (
               <div
                 key={item.key}
                 className={cn(
@@ -148,15 +153,12 @@ export default function TaskListCard({
   );
 }
 
-function isEmptyList(summary: any) {
-  return (summary.open || 0) + (summary.completed || 0) === 0;
-}
-
-function pickTopSummaries(summary: any, max = 3) {
-  if (isEmptyList(summary)) return [];
+function pickTopSummaries(summary: TaskListSummary, max = 3) {
+  if (Number(summary.open || 0) + Number(summary.completed || 0) === 0)
+    return [];
   return SUMMARY_PRIORITY.map((item) => ({
     ...item,
-    value: summary[item.key] || 0,
+    value: summary[item.key as keyof typeof summary] || 0,
   }))
     .filter((item) => item.value > 0)
     .slice(0, max);

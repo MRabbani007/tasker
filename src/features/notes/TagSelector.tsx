@@ -3,7 +3,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Plus, Search, Tag as TagIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { cn } from "@/lib/utils";
 
 // Mock existing tags - replace with your DB fetch
 const ALL_TAGS = ["Work", "Personal", "Urgent", "Reference", "Project-X"];
@@ -11,11 +10,9 @@ const ALL_TAGS = ["Work", "Personal", "Urgent", "Reference", "Project-X"];
 export function TagSelector({
   activeTags,
   onAdd,
-  onRemove,
 }: {
   activeTags: string[];
   onAdd: (tag: string) => void;
-  onRemove: (tag: string) => void;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -101,7 +98,7 @@ export function TagSelector({
                   onClick={handleCreateNew}
                   className="flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs text-indigo-600 font-medium hover:bg-indigo-50 transition-all text-left"
                 >
-                  <Plus className="h-3 w-3" /> Create "{search}"
+                  <Plus className="h-3 w-3" /> Create &apos;{search}&apos;
                 </button>
               )}
 

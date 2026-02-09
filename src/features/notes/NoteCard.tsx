@@ -26,7 +26,6 @@ export function NoteCard({ note }: { note: Note }) {
   const [title, setTitle] = useState(note.title ?? "");
   const [details, setDetails] = useState(note.details ?? "");
   const [isSaving, setIsSaving] = useState(false);
-  const [isPending, startTransition] = useTransition();
 
   const debouncedTitle = useDebounce(title, 800);
   const debouncedDetails = useDebounce(details, 800);
@@ -47,17 +46,17 @@ export function NoteCard({ note }: { note: Note }) {
       }
     };
     handleSave();
-  }, [debouncedTitle, debouncedDetails, note.id]);
+  }, [debouncedTitle, debouncedDetails, note]);
 
-  const handleClose = (note: Note) => {
-    startTransition(async () => {
-      try {
-        await toggleOpenNote({ id: note.id, openedAt: null });
-      } catch (error) {
-        console.error("Failed to open note:", error);
-      }
-    });
-  };
+  // const handleClose = (note: Note) => {
+  //   startTransition(async () => {
+  //     try {
+  //       await toggleOpenNote({ id: note.id, openedAt: null });
+  //     } catch (error) {
+  //       console.error("Failed to open note:", error);
+  //     }
+  //   });
+  // };
 
   // Inside NoteCard component...
   const [tags, setTags] = useState<string[]>(["Project", "Idea"]); // Mocked initial tags
@@ -74,7 +73,7 @@ export function NoteCard({ note }: { note: Note }) {
       formData.append("id", note.id);
       formData.append("tags", JSON.stringify(updatedTags));
       await updateNote(formData); // Use your existing updateNote action
-    } catch (error) {
+    } catch {
       setTags(tags); // Rollback on failure
     }
   };
@@ -88,7 +87,7 @@ export function NoteCard({ note }: { note: Note }) {
       formData.append("id", note.id);
       formData.append("tags", JSON.stringify(updatedTags));
       await updateNote(formData);
-    } catch (error) {
+    } catch {
       setTags(tags);
     }
   };
@@ -175,11 +174,7 @@ export function NoteCard({ note }: { note: Note }) {
           ))}
 
           {/* Integrated TagSelector */}
-          <TagSelector
-            activeTags={tags}
-            onAdd={handleAddTag}
-            onRemove={handleRemoveTag}
-          />
+          <TagSelector activeTags={tags} onAdd={handleAddTag} />
         </div>
 
         <div className="flex items-center shrink-0">

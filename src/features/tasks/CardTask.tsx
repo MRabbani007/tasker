@@ -7,12 +7,17 @@ import {
   MoreVertical,
   Hash,
   Clock,
+  ListChecks,
+  Loader,
+  Check,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Task } from "../../../generated/prisma/client";
 import UserFormTrigger from "@/components/UserFormTrigger";
 import { getDueInfo } from "@/lib/helpers";
+import { useDebounce } from "@/hooks/useDebounce";
+import { toggleTaskCompleted } from "@/lib/actions/user/tasks";
 
 // More professional priority map using Slate/Indigo variants
 const priorityConfig: Record<number, { color: string; label: string }> = {
@@ -23,8 +28,13 @@ const priorityConfig: Record<number, { color: string; label: string }> = {
   5: { color: "bg-rose-500", label: "Urgent" },
 };
 
-export default function CardTask({ task }: { task: Task }) {
+export default function CardTask({
+  task,
+}: {
+  task: Task & { taskList: { title: string | null } | null };
+}) {
   const [completed, setCompleted] = useState(task.completed);
+  const [saving, setSaving] = useState(false);
 
   // Priority config as defined before
   const priority = priorityConfig[task.priority] || priorityConfig[1];
@@ -33,31 +43,74 @@ export default function CardTask({ task }: { task: Task }) {
     task.dueAt?.toISOString().split("T")[1],
   );
 
+  const debouncedCompleted = useDebounce(completed, 1000);
+
+  const hasList = !!task?.taskList;
+
+  useEffect(() => {
+    const handleUpdate = async () => {
+      setSaving(true);
+
+      const formData = new FormData();
+      formData.append("id", task.id);
+      formData.append("completed", String(debouncedCompleted));
+      formData.append("completedAt", String(new Date()));
+
+      await toggleTaskCompleted(formData);
+
+      setSaving(false);
+    };
+
+    if (debouncedCompleted !== task.completed) {
+      handleUpdate();
+    }
+  }, [debouncedCompleted]);
+
   return (
     <div
       className={cn(
-        "group relative flex flex-col rounded-2xl border bg-white transition-all duration-300",
-        "hover:shadow-xl hover:shadow-slate-200/40",
+        "flex-1 group relative flex flex-col rounded-2xl border bg-white dark:bg-zinc-800 transition-all duration-300",
+        "hover:shadow-xl hover:shadow-slate-200/40 dark:hover:shadow-slate-500/40",
         completed
           ? "border-slate-100 bg-slate-50/50"
-          : "border-slate-200 shadow-sm",
+          : "border-slate-200 dark:border-slate-600 shadow-sm",
       )}
     >
-      {/* 1. Optional Title as a "Topic Badge" at the very top */}
-      {task.title && (
-        <div className="px-4 pt-3 flex items-center gap-1.5">
-          <div className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-indigo-50 border border-indigo-100/50 max-w-[80%]">
-            <Hash className="h-3 w-3 text-indigo-400" />
-            <span className="text-[10px] font-bold text-indigo-600 uppercase truncate">
-              {task.title}
-            </span>
+      <div className="flex items-center gap-4 px-4 pt-3 ">
+        {/* 1. Optional Title as a "Topic Badge" at the very top */}
+        {task.title && (
+          <div className="flex-1 flex items-center gap-1.5">
+            <div className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-indigo-50 border border-indigo-100/50 max-w-[80%]">
+              <Hash className="h-3 w-3 text-indigo-400" />
+              <span className="text-[10px] font-bold text-indigo-600 uppercase truncate">
+                {task.title}
+              </span>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      <div className="p-4 flex flex-col gap-3">
+        <UserFormTrigger
+          type="container"
+          value="MOVE_TASK"
+          editItem={{ type: "task", data: task }}
+          className="flex items-center gap-2 px-2 py-0.5 ml-auto rounded-md bg-indigo-50 border border-indigo-100/50 max-w-[80%] overflow-clip"
+        >
+          <ListChecks size={16} className="text-indigo-400" />
+          {hasList ? (
+            <span className="text-[10px] font-bold text-indigo-600 uppercase truncate">
+              {task.taskList?.title}
+            </span>
+          ) : (
+            <span className="text-[10px] text-zinc-600 invisible group-hover:visible opacity-0 group-hover:opacity-100 duration-200 w-0 group-hover:w-12 text-nowrap">
+              Move to list
+            </span>
+          )}
+        </UserFormTrigger>
+      </div>
+
+      <div className="p-4 flex-1 flex flex-col gap-3">
         {/* 2. Main Task Area: Toggle + Content */}
-        <div className="flex items-start gap-3">
+        <div className="flex-1 flex items-start gap-3">
           <button
             onClick={() => setCompleted(!completed)}
             className={cn(
@@ -85,7 +138,7 @@ export default function CardTask({ task }: { task: Task }) {
           >
             <p
               className={cn(
-                "text-base font-semibold leading-snug text-slate-800 cursor-pointer transition-colors",
+                "text-base font-semibold leading-snug text-slate-800 dark:text-slate-100 cursor-pointer transition-colors",
                 completed && "line-through text-slate-400",
               )}
             >
@@ -142,6 +195,12 @@ export default function CardTask({ task }: { task: Task }) {
               <MoreVertical size={14} />
             </button>
           </div>
+
+          {saving ? (
+            <Loader size={15} className="animate-spin" />
+          ) : (
+            <Check size={15} />
+          )}
         </div>
       </div>
     </div>

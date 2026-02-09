@@ -1,4 +1,4 @@
-import { Note, Task, TaskList } from "../generated/prisma/client";
+import { JournalEntry, Note, Task, TaskList } from "../generated/prisma/client";
 
 declare global {
   type RHFError =
@@ -31,6 +31,9 @@ declare global {
     | "EDIT_LIST"
     | "EDIT_TASK"
     | "EDIT_NOTE"
+    | "MOVE_TASK"
+    | "CREATE_JOURNAL_ENTRY"
+    | "EDIT_JOURNAL_ENTRY"
     | "";
 
   type EditItem<TType extends string, TData> = {
@@ -49,6 +52,7 @@ declare global {
     | EditItem<"tasklist", TaskList>
     | EditItem<"task", Task>
     | EditItem<"note", Note>
+    | EditItem<"journal", JournalEntry>
     | EditItem<"empty", { id: string }>
     | null;
 
@@ -72,6 +76,11 @@ declare global {
     overdue: number;
     open: number;
     completed: number;
+  };
+
+  type JournalFilters = {
+    query?: string;
+    day?: string;
   };
 }
 

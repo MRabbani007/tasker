@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 interface Props extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: string;
   name: string;
-  error?: any; // Compatible with React Hook Form FieldError
+  error?: RHFError; // Compatible with React Hook Form FieldError
 }
 
 const TextAreaField = forwardRef<HTMLTextAreaElement, Props>(

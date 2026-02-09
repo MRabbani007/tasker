@@ -2,12 +2,15 @@ import Pagination from "@/components/Pagination";
 import UserFormTrigger from "@/components/UserFormTrigger";
 import CardTask from "@/features/tasks/CardTask";
 import FormTask from "@/features/tasks/FormTask";
-import FormTaskList from "@/features/tasks/FormTaskList";
 import { getTasks } from "@/lib/actions/user/tasks";
 import { extractFilters } from "@/lib/helpers";
 import { Plus } from "lucide-react";
 import TaskFilters from "@/features/tasks/TaskFilters";
-import CardTaskOld from "@/features/tasks/CardTaskOld";
+import FormMoveTask from "@/features/tasks/FormMoveTask";
+import { getTaskLists } from "@/lib/actions/user/tasklists";
+import { TaskListsDropZone } from "@/features/tasks/TaskListDropZone";
+import { DraggableTask } from "@/features/tasks/DraggableTask";
+import type { Metadata } from "next";
 
 const FILTER_MAP = {
   query: "query",
@@ -19,6 +22,17 @@ const FILTER_MAP = {
 } as const;
 
 const itemsPerPage = 20;
+
+export const metadata: Metadata = {
+  title: "Tasks",
+  description:
+    "Manage your tasks, set priorities, track progress, and stay focused on what matters.",
+  openGraph: {
+    title: "Tasks · Tasker",
+    description:
+      "Organize your tasks, track progress, and stay productive with Tasker.",
+  },
+};
 
 export default async function TasksPage({
   searchParams,
@@ -36,12 +50,14 @@ export default async function TasksPage({
     filters,
   });
 
+  const { data: userLists } = await getTaskLists({ page: 1, itemsPerPage: 10 });
+
   return (
     <main className="flex-1 flex flex-col gap-8 p-6 lg:p-10 max-w-7xl mx-auto w-full">
       {/* Header Area */}
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div className="space-y-1">
-          <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">
+          <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100 duration-200">
             Task Board
           </h1>
           <div className="flex items-center gap-2 text-slate-500 font-medium">
@@ -61,7 +77,7 @@ export default async function TasksPage({
       </header>
 
       {/* Filter Bar */}
-      <div className="flex items-center justify-between p-2 bg-slate-50 border border-slate-200 rounded-2xl">
+      <div className="flex items-center justify-between p-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-500 rounded-2xl">
         <TaskFilters />
         <div className="flex items-center gap-2 pr-2">
           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
@@ -71,29 +87,42 @@ export default async function TasksPage({
       </div>
 
       {/* Grid Content */}
-      <div className="flex-1">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {data.map((task) => (
-            <CardTask key={task.id} task={task} />
-          ))}
+      <TaskListsDropZone
+        taskLists={
+          userLists
+            ? userLists.map((item) => ({
+                name: item.title ?? "",
+                id: item.id,
+              }))
+            : []
+        }
+      >
+        <div className="flex-1">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {data.map((task) => (
+              <DraggableTask key={task.id} task={task}>
+                <CardTask task={task} />
+              </DraggableTask>
+            ))}
+          </div>
         </div>
-      </div>
-
-      {/* Repeated */}
-      {/* <div className="flex-1">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 py-6">
-          {data.map((task) => (
-            <CardTaskOld key={task.id} task={task} />
-          ))}
-        </div>
-      </div> */}
+      </TaskListsDropZone>
 
       <div className="py-10 border-t border-slate-100">
         <Pagination page={page} count={count} itemsPerPage={itemsPerPage} />
       </div>
 
       <FormTask />
-      <FormTaskList />
+      <FormMoveTask
+        options={
+          userLists
+            ? userLists.map((item) => ({
+                label: item.title ?? "",
+                value: item.id,
+              }))
+            : []
+        }
+      />
     </main>
   );
 }

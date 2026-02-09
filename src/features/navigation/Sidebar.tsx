@@ -28,7 +28,7 @@ const items = [
 ];
 
 export default function Sidebar({ user }: { user?: { firstName: string } }) {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
   const pathname = usePathname();
   const isAdmin = true; // Logic check
 

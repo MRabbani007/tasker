@@ -25,12 +25,16 @@ export function useTaskFormVisibility() {
     useState<TaskFormVisibility>(DEFAULT_VISIBILITY);
 
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      try {
-        setVisibility({ ...DEFAULT_VISIBILITY, ...JSON.parse(stored) });
-      } catch {}
+    function load() {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        try {
+          setVisibility({ ...DEFAULT_VISIBILITY, ...JSON.parse(stored) });
+        } catch {}
+      }
     }
+
+    load();
   }, []);
 
   useEffect(() => {

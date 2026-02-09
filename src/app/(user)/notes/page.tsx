@@ -3,6 +3,18 @@ import { NoteCard } from "@/features/notes/NoteCard";
 import NotesList from "@/features/notes/NotesList";
 import { getNotes } from "@/lib/actions/user/notes";
 import { Filter, LayoutGrid, ListIcon, Pin, Search } from "lucide-react";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Notes",
+  description:
+    "Capture ideas, thoughts, and quick notes in a distraction-free writing space.",
+  openGraph: {
+    title: "Notes · Tasker",
+    description:
+      "Write, edit, and organize notes with a clean and focused experience.",
+  },
+};
 
 export default async function NotesPage() {
   const { data: notes } = await getNotes({});

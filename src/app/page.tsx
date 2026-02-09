@@ -1,4 +1,5 @@
 import Carousel from "@/components/Carousel";
+import Image from "next/image";
 import Link from "next/link";
 
 const slides = [
@@ -21,7 +22,7 @@ export default function HomePage() {
       <section className="min-h-[85vh] flex flex-col items-center justify-center lg:flex-row gap-x-8 gap-y-4 lg:mx-auto">
         <div className="flex flex-col justify-center items-start">
           <div className="flex flex-wrap justify-center items-center gap-4 ">
-            <img
+            <Image
               src="logo.png"
               alt="Logo"
               width={100}
@@ -60,7 +61,7 @@ export default function HomePage() {
           </div>
         </div>
         <div className="flex flex-col justify-center items-start gap-2">
-          <section className="max-w-[80vw] sm:max-w-[500px] md:max-w-[700px] overflow-hidden">
+          <section className="max-w-[80vw] sm:max-w-125 md:max-w-175 overflow-hidden">
             <Carousel autoplay autoplaySpeed={3000}>
               {slides.map((item, index) => {
                 return (

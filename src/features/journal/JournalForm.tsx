@@ -1,12 +1,10 @@
 "use client";
-import React, { useState } from "react";
+import React from "react";
 
 export const JournalForm = () => {
-  const [mood, setMood] = useState("neutral");
-
   return (
     <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
-      <h3 className="text-lg font-medium mb-6">Today's Reflection</h3>
+      <h3 className="text-lg font-medium mb-6">Today&apos;s Reflection</h3>
 
       <form className="space-y-6">
         {/* Mood Selector */}
@@ -42,7 +40,7 @@ export const JournalForm = () => {
         {/* Free Writing */}
         <div>
           <label className="block text-sm font-medium mb-2">
-            What's on your mind?
+            What&apos;s on your mind?
           </label>
           <textarea
             rows={4}

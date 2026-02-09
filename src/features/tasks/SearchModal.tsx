@@ -121,7 +121,7 @@ export default function SearchModal() {
     router.push(`/search?query=${encodeURIComponent(value)}`);
   };
 
-  const openLink = ({ title, id, type }: Suggestion) => {
+  const openLink = ({ title, type }: Suggestion) => {
     if (!title.trim()) return;
 
     // Save to recent searches

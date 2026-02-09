@@ -5,8 +5,20 @@ import FormTaskList from "@/features/tasks/FormTaskList";
 import { getTaskListsWithSummary } from "@/lib/actions/user/tasklists";
 import { extractFilters } from "@/lib/helpers";
 import { Plus, Search, Pin, Layers, LayoutGrid } from "lucide-react";
+import type { Metadata } from "next";
 
 const itemsPerPage = 10;
+
+export const metadata: Metadata = {
+  title: "Collections",
+  description:
+    "Group your tasks into collections to keep your work structured and easy to navigate.",
+  openGraph: {
+    title: "Collections · Tasker",
+    description:
+      "Organize tasks into collections for better clarity and workflow.",
+  },
+};
 
 export default async function ListsPage({
   searchParams,
@@ -15,7 +27,9 @@ export default async function ListsPage({
 }) {
   const resolvedSearchParams = await searchParams;
   const page = +(resolvedSearchParams?.page ?? 1);
-  const filters: any = extractFilters(resolvedSearchParams, { query: "query" });
+  const filters: TaskListFilters = extractFilters(resolvedSearchParams, {
+    query: "query",
+  });
 
   const { data, count = 0 } = await getTaskListsWithSummary({
     page,

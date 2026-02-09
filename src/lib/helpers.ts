@@ -108,7 +108,7 @@ export function normalizeDate(value: unknown): Date | null {
   return null;
 }
 
-function mergeDateAndTime(date?: string, time?: string) {
+export function mergeDateAndTime(date?: string, time?: string) {
   if (!date) return null;
   const d = new Date(date);
   if (time) {
@@ -129,9 +129,6 @@ export function getDueInfo(dueOn?: string, dueAt?: string): DueInfo | null {
 
   // Build a Date safely
   const date = parseISO(`${dueOn}T${dueAt ?? "23:59"}`);
-
-  const now = new Date();
-
   const overdue = isPast(date) && !isToday(date);
 
   let message: string;

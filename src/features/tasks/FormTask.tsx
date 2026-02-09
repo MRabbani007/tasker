@@ -5,7 +5,6 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import toast from "react-hot-toast";
 import { Calendar, Flag, AlertCircle, Type, AlignLeft } from "lucide-react";
-
 import InputField from "@/components/forms/InputField";
 import TextAreaField from "@/components/ui/TextAreaField";
 import ModalForm from "@/components/ui/ModalForm";
@@ -16,6 +15,7 @@ import { T_Task } from "@/lib/templates";
 import { cn } from "@/lib/utils";
 import { useTaskFormVisibility } from "@/hooks/useTaskFormVisibility";
 import { Expand } from "@/components/Expand";
+import { useCommandShortcut } from "@/hooks/useCommandShortcut";
 
 const COLORS = [
   "bg-sky-500",
@@ -47,9 +47,13 @@ export default function FormTask() {
   const color = watch("color");
   const allVisible = Object.values(visibility).every(Boolean);
 
+  useCommandShortcut({ key: "a", alt: false }, () =>
+    setShowForm("CREATE_TASK"),
+  );
+
   // Sync data on Edit
   useEffect(() => {
-    if (isOpen && editItem?.type === "task") {
+    if (showForm === "EDIT_TASK" && editItem?.type === "task") {
       reset({
         ...T_Task,
         ...editItem.data,
@@ -61,8 +65,12 @@ export default function FormTask() {
           ? editItem.data.dueAt.toISOString().slice(11, 16)
           : undefined,
       });
+    } else if (showForm === "CREATE_TASK") {
+      reset({
+        ...T_Task,
+      });
     }
-  }, [isOpen, editItem, reset]);
+  }, [showForm, editItem, reset]);
 
   const onSubmit: SubmitHandler<TaskInput> = async (data) => {
     const formData = new FormData();

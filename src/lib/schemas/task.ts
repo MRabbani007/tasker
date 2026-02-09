@@ -39,6 +39,13 @@ export const TaskCompleteSchema = z.object({
   completedAt: dateSchema.nullable(),
 });
 
+export const MoveTaskSchema = z.object({
+  id: z.string().optional(),
+  taskListId: z.string(),
+});
+
+export type MoveTaskInput = z.infer<typeof MoveTaskSchema>;
+
 export const CreateTaskSchema = z.object({
   title: z.string().optional(),
   task: z.string().optional(),

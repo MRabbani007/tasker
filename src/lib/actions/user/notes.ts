@@ -126,7 +126,7 @@ export async function toggleOpenNote({
     revalidatePath("/notes");
 
     return success(null);
-  } catch (error) {
+  } catch {
     return fail(500, "Server Error");
   }
 }
@@ -155,9 +155,23 @@ export async function togglePinNote({
     revalidatePath("/notes");
 
     return success(null);
-  } catch (error) {
+  } catch {
     return fail(500, "Server Error");
   }
 }
 
-export async function deleteNote(id: string) {}
+export async function deleteNote(id: string) {
+  try {
+    const user = await getCurrentUser();
+
+    if (!user) {
+      return fail(403, "Un-Authorized");
+    }
+
+    await prisma.note.delete({ where: { id } });
+
+    return success(null);
+  } catch {
+    return fail(500, "Server Error");
+  }
+}
