@@ -7,6 +7,7 @@ import { ListCheck } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import DraggableUserLists from "./DraggableUserLists";
+import { useUser } from "@/context/UserContext";
 
 export function TaskListsDropZone({
   taskLists,
@@ -15,7 +16,7 @@ export function TaskListsDropZone({
   taskLists: { id: string; name: string }[];
   children: React.ReactNode;
 }) {
-  const [showUserLists, setShowUserLists] = useState(true);
+  const { showUserLists, setShowUserLists } = useUser();
   const [{ x, y }, setCoordinates] = useState({ x: 0, y: 0 });
 
   function onDragEnd(event: DragEndEvent) {
@@ -26,6 +27,8 @@ export function TaskListsDropZone({
         x: prev.x + delta.x,
         y: prev.y + delta.y,
       }));
+
+      return;
     }
 
     if (!over) return;

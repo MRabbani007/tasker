@@ -1,13 +1,13 @@
 // hooks/useSession.ts
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 export function useSession() {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
-  async function fetchSession() {
+  const fetchSession = useCallback(async () => {
     try {
       const res = await fetch("/api/auth/session", {
         credentials: "include",
@@ -23,7 +23,7 @@ export function useSession() {
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
   useEffect(() => {
     fetchSession();

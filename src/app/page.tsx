@@ -114,7 +114,7 @@ export default function HomePage() {
               ) : (
                 <>
                   <Link
-                    href="/signup"
+                    href="/register"
                     className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-8 py-4 text-white font-bold shadow-xl shadow-indigo-200 hover:bg-indigo-700 transition-all hover:scale-105"
                   >
                     Start for Free <ArrowRight size={18} />

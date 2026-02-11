@@ -17,6 +17,7 @@ import {
 import { revalidatePath } from "next/cache";
 import { Prisma } from "../../../../generated/prisma/client";
 import { TaskCreateInput } from "../../../../generated/prisma/models";
+import { startOfDay, endOfDay, endOfWeek } from "date-fns";
 
 export async function getTasks({
   itemsPerPage = 20,
@@ -79,6 +80,120 @@ export async function getTasks({
     return success(data, "", count);
   } catch {
     return failData(500, [], "Server Error");
+  }
+}
+
+export async function getTaskSummary() {
+  try {
+    const user = await getCurrentUser();
+
+    if (!user) {
+      return failData(403, null, "Un-Authorized");
+    }
+
+    const now = new Date();
+    const todayStart = startOfDay(now);
+    const todayEnd = endOfDay(now);
+    const weekEnd = endOfWeek(now, { weekStartsOn: 1 }); // Starts Monday
+
+    // We run these in parallel for production-grade speed
+    const [
+      today,
+      overdue,
+      highPriorityOverdue,
+      thisWeek,
+      scheduled,
+      flagged,
+      completed,
+      openTasks,
+    ] = await Promise.all([
+      // 1. Today: Due today and not completed
+      prisma.task.count({
+        where: {
+          userId: user.id,
+          completed: false,
+          deletedAt: null,
+          dueOn: { gte: todayStart, lte: todayEnd },
+        },
+      }),
+      // 2. Overdue: Due before today and not completed
+      prisma.task.count({
+        where: {
+          userId: user.id,
+          completed: false,
+          deletedAt: null,
+          dueOn: { lt: todayStart },
+        },
+      }),
+      // 3. High Priority Overdue: Overdue AND Priority > 4
+      prisma.task.count({
+        where: {
+          userId: user.id,
+          completed: false,
+          deletedAt: null,
+          dueOn: { lt: todayStart },
+          priority: { gt: 4 },
+        },
+      }),
+      // 4. This Week: Due between tomorrow and end of week
+      prisma.task.count({
+        where: {
+          userId: user.id,
+          completed: false,
+          deletedAt: null,
+          dueOn: { gt: todayEnd, lte: weekEnd },
+        },
+      }),
+      // 5. Scheduled: Any future due date
+      prisma.task.count({
+        where: {
+          userId: user.id,
+          completed: false,
+          deletedAt: null,
+          dueOn: { gt: todayEnd },
+        },
+      }),
+      // 6. Flagged: Using priority 5 as "Flagged" (or add a flagged boolean to your model later)
+      prisma.task.count({
+        where: {
+          userId: user.id,
+          completed: false,
+          deletedAt: null,
+          priority: 5,
+        },
+      }),
+      // 7. Completed: Tasks done today
+      prisma.task.count({
+        where: {
+          userId: user.id,
+          completed: true,
+          deletedAt: null,
+          completedAt: { gte: todayStart },
+        },
+      }),
+      // 8. Open Tasks: No due date, not completed
+      prisma.task.count({
+        where: {
+          userId: user.id,
+          completed: false,
+          deletedAt: null,
+          dueOn: null,
+        },
+      }),
+    ]);
+
+    return success({
+      today,
+      overdue,
+      highPriorityOverdue,
+      thisWeek,
+      scheduled,
+      flagged,
+      completed,
+      openTasks,
+    });
+  } catch {
+    return failData(500, null, "Server Error");
   }
 }
 
@@ -221,6 +336,24 @@ export async function updateTask(formData: unknown) {
   }
 }
 
+export async function updateTaskStatusAction(taskId: string, status: string) {
+  try {
+    await prisma.task.update({
+      where: { id: taskId },
+      data: {
+        status: status,
+        // If moved to DONE, mark as completed
+        completed: status === "DONE",
+        completedAt: status === "DONE" ? new Date() : null,
+      },
+    });
+    revalidatePath("/dashboard");
+    revalidatePath("/kanban");
+  } catch (error) {
+    console.error("Failed to update task status:", error);
+  }
+}
+
 export async function toggleTaskCompleted(formData: unknown) {
   try {
     const user = await getCurrentUser();
@@ -307,5 +440,19 @@ export async function deleteTask(id: string) {
     return success(null);
   } catch {
     return fail(500, "Server Error");
+  }
+}
+
+export async function softDeleteTaskAction(taskId: string) {
+  try {
+    await prisma.task.update({
+      where: { id: taskId },
+      data: { deletedAt: new Date() },
+    });
+    revalidatePath("/kanban");
+    revalidatePath("/dashboard");
+    return { success: true };
+  } catch {
+    return { success: false, error: "Failed to delete task" };
   }
 }

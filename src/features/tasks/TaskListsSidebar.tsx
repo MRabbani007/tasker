@@ -54,7 +54,7 @@ export default function TaskListsSidebar({ lists }: Props) {
       <button
         onClick={() => setOpen(!open)}
         className={cn(
-          "absolute top-2 translate-y-0 z-200",
+          "absolute top-20 translate-y-0 z-50",
           "rounded-r-lg border border-l-0 border-zinc-200 bg-white p-1.5 shadow",
           "hover:bg-zinc-100 transition",
           open ? "left-64" : "left-0",

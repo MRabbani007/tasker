@@ -41,6 +41,14 @@ export default function FormMoveTask({ options }: { options: Option[] }) {
   }, [showForm, editItem, reset]);
 
   const onSubmit: SubmitHandler<MoveTaskInput> = async (data) => {
+    if (
+      showForm !== "MOVE_TASK" ||
+      (editItem?.type === "task" &&
+        editItem?.data.taskListId === data.taskListId)
+    ) {
+      return;
+    }
+
     const formData = new FormData();
     Object.entries(data).forEach(([key, val]) => {
       if (val !== undefined && val !== null) formData.append(key, String(val));

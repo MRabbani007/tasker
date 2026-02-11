@@ -13,6 +13,8 @@ type UserContextType = {
   setShowSearchModal: Dispatch<SetStateAction<boolean>>;
   showForm: UserFormType;
   setShowForm: Dispatch<SetStateAction<UserFormType>>;
+  showUserLists: boolean;
+  setShowUserLists: Dispatch<SetStateAction<boolean>>;
   editItem: UserEditItem;
   setEditItem: Dispatch<SetStateAction<UserEditItem>>;
 };
@@ -28,6 +30,7 @@ export default function UserProvider({
   const [editItem, setEditItem] = useState<UserEditItem>(null);
 
   const [showSearchModal, setShowSearchModal] = useState(false);
+  const [showUserLists, setShowUserLists] = useState(false);
 
   return (
     <UserContext.Provider
@@ -38,6 +41,8 @@ export default function UserProvider({
         setEditItem,
         showSearchModal,
         setShowSearchModal,
+        showUserLists,
+        setShowUserLists,
       }}
     >
       {children}

@@ -11,11 +11,7 @@ import {
   deleteJournalEntry,
   updateJournalEntry,
 } from "@/lib/actions/user/journal";
-import {
-  formatDateToParam,
-  parseDayParam,
-  toInputDateValue,
-} from "@/lib/format/date";
+import { parseDayParam, toInputDateValue } from "@/lib/format/date";
 import {
   CreateJournalEntryInput,
   createJournalEntrySchema,

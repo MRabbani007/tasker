@@ -73,7 +73,7 @@ export default function Navbar({ user }: { user?: User }) {
         onClick={() => setIsOpen(true)}
         className="fixed bottom-6 right-6 z-50 p-2 rounded-xl
              text-slate-600 bg-slate-100 transition-colors
-             lg:hidde"
+             lg:hidden"
       >
         <Menu size={26} />
       </button>

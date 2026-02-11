@@ -1,5 +1,6 @@
 "use client";
 
+import { useUser } from "@/context/UserContext";
 import { cn } from "@/lib/utils";
 import { useDraggable } from "@dnd-kit/core";
 
@@ -10,9 +11,12 @@ export function DraggableTask({
   task: { id: string };
   children: React.ReactNode;
 }) {
+  const { showUserLists } = useUser();
+
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({
       id: `task:${task.id}`,
+      disabled: !showUserLists,
     });
 
   const style = transform

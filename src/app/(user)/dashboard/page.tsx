@@ -1,21 +1,28 @@
 import {
-  CheckCircle2,
-  Clock,
-  StickyNote,
   Calendar,
   BookOpen,
   ArrowUpRight,
   TrendingUp,
   Kanban,
-  Zap,
   Plus,
+  StickyNote,
+  Pin,
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { getCurrentUser } from "@/lib/auth/utils";
 import type { Metadata } from "next";
 import { ReactNode } from "react";
-import FadeIn from "@/components/animation/FadeIn";
+import PomodoroTimerCard from "@/features/dashboard/PomodoroTimerCard";
+import SmartTaskSummary from "@/features/dashboard/TaskSummary";
+import { getTaskSummary } from "@/lib/actions/user/tasks";
+import OverdueAlert from "@/features/dashboard/OverdueAlert";
+import { getDashboardLists } from "@/lib/actions/user/tasklists";
+import ListCollectionsCard from "@/features/dashboard/DashboardCollections";
+import QuickCapture from "@/features/dashboard/QuickCapture";
+import { getNotes } from "@/lib/actions/user/notes";
+import UserFormTrigger from "@/components/UserFormTrigger";
+import { formatDistanceToNow } from "date-fns";
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -28,31 +35,47 @@ export const metadata: Metadata = {
   },
 };
 
+// const taskStats = {
+//   today: 0,
+//   overdue: 2,
+//   scheduled: 12,
+//   flagged: 1,
+//   completed: 45,
+//   thisWeek: 0,
+//   openTasks: 3,
+//   highPriorityOverdue: 1, // This will trigger the "Critical" card
+// };
+
 export default async function DashboardPage() {
+  const { data: stats } = await getTaskSummary();
+
+  const userLists = await getDashboardLists();
+
+  const { data: notes } = await getNotes({});
   // Mock data - replace with your prisma calls
-  const stats = [
-    {
-      label: "Active Tasks",
-      value: "12",
-      icon: CheckCircle2,
-      color: "text-emerald-600",
-      bg: "bg-emerald-50",
-    },
-    {
-      label: "Open Notes",
-      value: "5",
-      icon: StickyNote,
-      color: "text-indigo-600",
-      bg: "bg-indigo-50",
-    },
-    {
-      label: "Deadlines",
-      value: "3",
-      icon: Clock,
-      color: "text-rose-600",
-      bg: "bg-rose-50",
-    },
-  ];
+  // const stats = [
+  //   {
+  //     label: "Active Tasks",
+  //     value: "12",
+  //     icon: CheckCircle2,
+  //     color: "text-emerald-600",
+  //     bg: "bg-emerald-50",
+  //   },
+  //   {
+  //     label: "Open Notes",
+  //     value: "5",
+  //     icon: StickyNote,
+  //     color: "text-indigo-600",
+  //     bg: "bg-indigo-50",
+  //   },
+  //   {
+  //     label: "Deadlines",
+  //     value: "3",
+  //     icon: Clock,
+  //     color: "text-rose-600",
+  //     bg: "bg-rose-50",
+  //   },
+  // ];
 
   const user = await getCurrentUser();
 
@@ -76,10 +99,21 @@ export default async function DashboardPage() {
         </div>
       </header>
 
+      {/* Smart Summary Row */}
+      {stats && <SmartTaskSummary stats={stats} />}
+
+      <OverdueAlert count={stats?.overdue ?? 0} />
+
+      <PomodoroTimerCard />
+
+      {/* Quick Capture Card */}
+      <QuickCapture />
+
       {/* Bento Grid */}
       <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-6">
+        <ListCollectionsCard lists={userLists} />
         {/* Row 1: Quick Stats */}
-        {stats.map((stat, i) => (
+        {/* {stats.map((stat, i) => (
           <FadeIn
             key={stat.label}
             index={i}
@@ -100,7 +134,7 @@ export default async function DashboardPage() {
               {stat.value}
             </h3>
           </FadeIn>
-        ))}
+        ))} */}
 
         {/* Row 2: Recent Activity (Large Bento) */}
         <div className="md:col-span-2 lg:col-span-2 p-8 rounded-4xl bg-slate-900 text-white shadow-2xl relative overflow-hidden">
@@ -160,6 +194,13 @@ export default async function DashboardPage() {
             href="/kanban"
             color="bg-indigo-100 text-indigo-700"
           />
+          <ToolCard
+            title="Notes"
+            desc="Quick thoughts"
+            icon={<StickyNote size={20} />}
+            href="/notes"
+            color="bg-rose-100 text-rose-700"
+          />
         </div>
 
         {/* Weekly Velocity */}
@@ -194,42 +235,64 @@ export default async function DashboardPage() {
         </div>
 
         {/* Row 3: Recent Note (Small Bento) */}
-        <div className="md:col-span-4 lg:col-span-3 p-6 rounded-3xl bg-white border border-slate-200">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="font-bold text-slate-800">Latest Note</h2>
-            <span className="text-[10px] font-bold text-slate-400 uppercase">
-              2 hours ago
-            </span>
-          </div>
-          <p className="text-slate-600 italic line-clamp-3 leading-relaxed">
-            &ldquo;Need to finalize the database schema for the journal feature.
-            Remember to add the entry metadata and tags support...&rdquo;
-          </p>
-        </div>
-
-        {/* Quick Capture Card */}
-        <div className="md:col-span-4 lg:col-span-3 p-6 rounded-3xl bg-indigo-600 text-white shadow-xl shadow-indigo-200 relative overflow-hidden group">
-          <div className="relative z-10">
-            <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-              <Zap size={18} className="fill-white" /> Quick Capture
-            </h3>
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="I need to..."
-                className="w-full bg-white/10 border border-white/20 rounded-2xl py-3 px-4 text-sm placeholder:text-indigo-200 outline-none focus:bg-white/20 transition-all"
-              />
-              <button className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-white text-indigo-600 rounded-xl hover:scale-105 transition-transform">
-                <Plus size={18} strokeWidth={3} />
-              </button>
+        <div className="md:col-span-2 lg:col-span-4 p-6 rounded-3xl bg-white border border-slate-200 flex flex-col">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <h2 className="font-bold text-slate-800">Recent Notes</h2>
+              <span className="bg-slate-100 text-slate-500 text-[10px] px-2 py-0.5 rounded-full font-bold">
+                {notes.length}
+              </span>
             </div>
-            <p className="text-[10px] mt-3 font-medium text-indigo-100/70 uppercase tracking-widest">
-              Press{" "}
-              <kbd className="bg-white/10 px-1.5 py-0.5 rounded border border-white/20">
-                Enter
-              </kbd>{" "}
-              to save to Inbox
-            </p>
+            <div className="flex gap-2">
+              <UserFormTrigger
+                value="CREATE_NOTE"
+                type="container"
+                className="p-1.5 hover:bg-slate-50 rounded-lg text-slate-400 hover:text-indigo-600 transition-colors"
+              >
+                <Plus size={18} />
+              </UserFormTrigger>
+              <Link
+                href="/notes"
+                className="p-1.5 hover:bg-slate-50 rounded-lg text-slate-400 hover:text-indigo-600 transition-colors"
+              >
+                <ArrowUpRight size={18} />
+              </Link>
+            </div>
+          </div>
+
+          <div className="space-y-3 flex-1">
+            {notes.slice(0, 2).map((note) => (
+              <Link
+                key={note.id}
+                href={`/notes?id=${note.id}`}
+                className="block p-3 rounded-2xl border border-transparent hover:border-slate-100 hover:bg-slate-50 transition-all group"
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <h4 className="font-semibold text-sm text-slate-700 truncate group-hover:text-indigo-600">
+                    {note.title || "Untitled Note"}
+                  </h4>
+                  {note.pinnedAt && (
+                    <Pin size={12} className="text-amber-500 fill-amber-500" />
+                  )}
+                  <span className="text-[10px] font-bold text-slate-400 uppercase">
+                    {note.pinnedAt
+                      ? formatDistanceToNow(new Date(note.pinnedAt), {
+                          addSuffix: true,
+                        })
+                      : "Not pinned"}
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500 line-clamp-1">
+                  {note.details}
+                </p>
+              </Link>
+            ))}
+
+            {notes.length === 0 && (
+              <div className="h-full flex flex-col items-center justify-center py-4 opacity-50">
+                <p className="text-xs text-slate-400">No notes yet</p>
+              </div>
+            )}
           </div>
         </div>
       </div>

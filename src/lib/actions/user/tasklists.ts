@@ -60,6 +60,25 @@ export async function getTaskLists({
   }
 }
 
+export async function getDashboardLists() {
+  const user = await getCurrentUser();
+  if (!user) return [];
+
+  return await prisma.taskList.findMany({
+    where: { userId: user.id, deletedAt: null },
+    take: 3,
+    orderBy: { updatedAt: "desc" },
+    select: {
+      id: true,
+      title: true,
+      details: true,
+      _count: {
+        select: { tasks: { where: { completed: false, deletedAt: null } } },
+      },
+    },
+  });
+}
+
 export async function getTaskListsWithSummary({
   itemsPerPage = 20,
   page = 1,
