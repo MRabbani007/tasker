@@ -50,3 +50,24 @@ export async function requireAdmin() {
 
   return user;
 }
+
+export async function getSession(): Promise<Session> {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    return {
+      authenticated: false,
+      user: null,
+    };
+  }
+
+  return {
+    authenticated: true,
+    user: {
+      id: user.id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName ?? "",
+    },
+  };
+}

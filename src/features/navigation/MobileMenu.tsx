@@ -1,159 +1,196 @@
 "use client";
 
-import { BsCardList, BsJournalText } from "react-icons/bs";
-import {
-  IoCalendarOutline,
-  IoListOutline,
-  IoMenu,
-  IoSettingsOutline,
-} from "react-icons/io5";
-import { SlNotebook } from "react-icons/sl";
-import { BiX } from "react-icons/bi";
-import { ReactNode, useEffect, useState } from "react";
-import { RxDashboard } from "react-icons/rx";
-import { PiKanbanLight, PiUserCircleLight } from "react-icons/pi";
-import Link from "next/link";
+import { Dispatch, SetStateAction, useEffect } from "react";
 import { usePathname } from "next/navigation";
+import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  X,
+  Calendar,
+  NotepadText,
+  NotebookPen,
+  CheckCircle2,
+  ListFilter,
+  Kanban,
+  Settings,
+  LogOut,
+  Info,
+  Sparkles,
+  CreditCard,
+  Mail,
+} from "lucide-react";
+import { MdOutlineTaskAlt } from "react-icons/md";
+import { cn } from "@/lib/utils";
+import { useSession } from "@/context/SessionProvider";
 
 const menuItems = [
-  {
-    label: "Dashboard",
-    title: "Dashboard",
-    url: "/dashboard",
-    icon: <RxDashboard size={20} />,
-  },
-  {
-    label: "Calendar",
-    title: "Calendar",
-    url: "/pages/calendar",
-    icon: <IoCalendarOutline size={20} />,
-  },
-  {
-    label: "Journal",
-    title: "Journal",
-    url: "/pages/journal",
-    icon: <BsJournalText size={20} />,
-  },
-  {
-    label: "Notes",
-    title: "Notes",
-    url: "/pages/notes",
-    icon: <SlNotebook size={20} />,
-  },
-  {
-    label: "My Tasks",
-    title: "My Tasks",
-    url: "/tasks",
-    icon: <IoListOutline size={20} />,
-  },
-  {
-    label: "My Lists",
-    title: "My Lists",
-    url: "/mylists",
-    icon: <BsCardList size={20} />,
-  },
-  {
-    label: "Planner",
-    title: "Planner",
-    url: "/tasks/planner",
-    icon: <PiKanbanLight style={{ strokeWidth: "1" }} size={20} />,
-  },
-  {
-    label: "Settings",
-    title: "Settings",
-    url: "/user/settings",
-    icon: <IoSettingsOutline size={20} />,
-  },
-  {
-    label: "Profile",
-    title: "Profile",
-    url: "/user/profile",
-    icon: <PiUserCircleLight size={20} />,
-  },
+  // { label: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
+  { label: "My Tasks", url: "/tasks", icon: CheckCircle2 },
+  { label: "Collections", url: "/lists", icon: ListFilter },
+  { label: "Calendar", url: "/calendar", icon: Calendar },
+  { label: "Kanban", url: "/kanban", icon: Kanban },
+  { label: "Journal", url: "/journal", icon: NotepadText },
+  { label: "Notes", url: "/notes", icon: NotebookPen },
+  // { label: "Settings", url: "/settings", icon: Settings },
+  // { label: "Profile", url: "/profile", icon: User },
+];
+
+const guestItems = [
+  { label: "About", url: "/about", icon: Info },
+  { label: "Features", url: "/features", icon: Sparkles },
+  { label: "Pricing", url: "/pricing", icon: CreditCard },
+  { label: "Contact Us", url: "/contact", icon: Mail },
 ];
 
 export default function MobileMenu({
-  toggleButton,
+  isOpen,
+  setIsOpen,
 }: {
-  toggleButton?: ReactNode;
+  isOpen: boolean;
+  setIsOpen: Dispatch<SetStateAction<boolean>>;
 }) {
-  const [viewMobileMenu, setViewMobileMenu] = useState(false);
+  const { authenticated, user, logout } = useSession();
   const pathname = usePathname();
 
-  const isActive = (page: string) => pathname.split("/").includes(page);
-
   useEffect(() => {
-    const handleEscape = (ev: globalThis.KeyboardEvent) => {
-      if (ev.key === "Escape") {
-        setViewMobileMenu(false);
-      }
-    };
-
-    if (viewMobileMenu) {
+    if (isOpen) {
       document.body.style.overflow = "hidden";
-      document.addEventListener("keydown", handleEscape);
     } else {
       document.body.style.overflow = "unset";
-      document.removeEventListener("keydown", handleEscape);
     }
-
-    return () => {
-      document.body.style.overflow = "unset";
-      document.removeEventListener("keydown", handleEscape);
-    };
-  }, [viewMobileMenu]);
+  }, [isOpen]);
 
   return (
     <>
-      <button title="Menu" onClick={() => setViewMobileMenu(true)}>
-        {toggleButton ? (
-          toggleButton
-        ) : (
-          <div className="p-2 bg-sky-900 hover:bg-sky-800 text-white duration-200 rounded-lg lg:hidden">
-            <IoMenu size={25} />
-          </div>
-        )}
-      </button>
-      <div
-        onClick={() => setViewMobileMenu(false)}
-        className={
-          (viewMobileMenu ? "" : "opacity-0 invisible") +
-          " fixed inset-0 bg-zinc-900/50 duration-200 z-100 lg:hidden"
-        }
-      />
-      <div
-        className={
-          (viewMobileMenu ? "" : "-translate-x-full") +
-          " fixed top-0 left-0 h-full w-[80%] max-w-75 bg-zinc-200 text-zinc-900 duration-200 z-120 lg:hidden"
-        }
-      >
-        <div className="flex items-center justify-between gap-4 p-4">
-          <Link href="/" title="Home Page" className="flex items-center gap-2">
-            <img src={"todo.svg"} alt="Logo" className="w-10" />
-            <span className="font-bold text-xl">Taskit</span>
-          </Link>
-          <button onClick={() => setViewMobileMenu(false)}>
-            <BiX size={25} />
-          </button>
-        </div>
-        <div className="flex flex-col">
-          {menuItems.map((item, idx) => (
-            <Link
-              href={item?.url}
-              title={item?.title}
-              key={idx}
-              className={
-                (isActive(item?.url) ? "" : "") +
-                " duration-200 flex items-center gap-2 py-2 px-4 hover:bg-zinc-300 hover:text-black"
-              }
-              onClick={() => setViewMobileMenu(false)}
+      <AnimatePresence>
+        {isOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsOpen(false)}
+              className="fixed inset-0 bg-slate-900/10 backdrop-blur z-100 lg:hidde"
+            />
+
+            {/* Side Panel */}
+            <motion.div
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="fixed top-0 left-0 bottom-0 w-70 h-dvh bg-white shadow-2xl z-120 flex flex-col overflow-hidden lg:hidde"
             >
-              {item.icon}
-              <span>{item.label}</span>
-            </Link>
-          ))}
-        </div>
-      </div>
+              {/* Header */}
+              <div className="flex items-center justify-between p-5 border-b border-slate-100">
+                {authenticated ? (
+                  <Link
+                    href="/dashboard"
+                    className="flex items-center gap-3 group"
+                  >
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-indigo-200 shadow-lg group-hover:scale-105 transition-transform">
+                      <span className="font-bold">
+                        {user?.firstName?.[0] || "U"}
+                      </span>
+                    </div>
+                    {
+                      <div className="flex flex-col overflow-hidden">
+                        <span className="text-sm font-bold text-slate-800 truncate">
+                          {user?.firstName || "User"}
+                        </span>
+                        <span className="text-[10px] font-medium text-indigo-500 uppercase tracking-wider">
+                          Pro Plan
+                        </span>
+                      </div>
+                    }
+                  </Link>
+                ) : (
+                  <Link
+                    href="/"
+                    className="flex items-center gap-2"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 text-white">
+                      <MdOutlineTaskAlt size={20} />
+                    </div>
+                    <span className="font-bold text-lg text-slate-800 tracking-tight">
+                      Tasker
+                    </span>
+                  </Link>
+                )}
+                <button
+                  onClick={() => setIsOpen(false)}
+                  className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-all"
+                >
+                  <X size={22} />
+                </button>
+              </div>
+
+              {/* Navigation */}
+              <nav className="flex-1 overflow-y-auto p-4 space-y-1">
+                {(authenticated ? menuItems : guestItems).map((item) => {
+                  const isActive = pathname === item.url;
+                  return (
+                    <Link
+                      key={item.url}
+                      href={item.url}
+                      onClick={() => setIsOpen(false)}
+                      className={cn(
+                        "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all",
+                        isActive
+                          ? "bg-indigo-50 text-indigo-600 shadow-sm shadow-indigo-100/50"
+                          : "text-slate-600 hover:bg-slate-50 hover:text-slate-900",
+                      )}
+                    >
+                      <item.icon
+                        size={20}
+                        className={
+                          isActive ? "text-indigo-600" : "text-slate-400"
+                        }
+                      />
+                      {item.label}
+                    </Link>
+                  );
+                })}
+              </nav>
+
+              {/* Footer */}
+              <div className="border-t border-slate-100 p-4 space-y-1">
+                {authenticated ? (
+                  <>
+                    <Link
+                      href="/settings"
+                      className={cn(
+                        "flex items-center gap-3 rounded-xl px-3 py-2.5 text-slate-500 transition-all hover:bg-slate-50",
+                      )}
+                    >
+                      <Settings size={20} className="shrink-0" />
+                      {<span className="text-sm font-medium">Settings</span>}
+                    </Link>
+                    <button
+                      onClick={() => logout({ redirectTo: "/login" })}
+                      className={cn(
+                        "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-rose-500 transition-all hover:bg-rose-50",
+                      )}
+                    >
+                      <LogOut size={20} className="shrink-0" />
+                      {<span className="text-sm font-medium">Logout</span>}
+                    </button>
+                  </>
+                ) : (
+                  <Link
+                    href="/login"
+                    className="w-full inline-flex items-center justify-center rounded-xl bg-indigo-600 px-5 py-2 text-sm font-bold text-white shadow-indigo-200 shadow-lg hover:bg-indigo-700 transition-all hover:shadow-indigo-300"
+                  >
+                    Get Started
+                  </Link>
+                )}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </>
   );
 }

@@ -100,7 +100,7 @@ export function NoteCard({ note }: { note: Note }) {
       )}
     >
       {/* Hidden Utility Bar (Shows on Hover) */}
-      <div className="absolute -top-3 -right-2 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-200 z-10 translate-y-1 group-hover:translate-y-0">
+      <div className="absolute -top-3 -right-2 flex items-center gap-1.5 md:opacity-0 opacity-100 group-hover:opacity-100 transition-all duration-200 z-10 md:translate-y-1 translate-y-0 group-hover:translate-y-0">
         <button
           onClick={() =>
             togglePinNote({

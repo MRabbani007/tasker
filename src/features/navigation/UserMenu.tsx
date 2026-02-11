@@ -4,11 +4,17 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { LogOut, Settings } from "lucide-react";
-import { logoutAction } from "@/lib/auth/actions";
+import { useSession } from "@/context/SessionProvider";
 
 export default function UserMenu({ user }: { user: User }) {
   const [open, setOpen] = useState(false);
+  const { logout } = useSession();
+
   const menuRef = useRef<HTMLDivElement | null>(null);
+
+  // Update initials logic for safety
+  const initials =
+    `${user?.firstName?.[0] || ""}${user?.lastName?.[0] || ""}`.toUpperCase();
 
   useEffect(() => {
     if (!open) return;
@@ -27,16 +33,12 @@ export default function UserMenu({ user }: { user: User }) {
     };
   }, [open]);
 
-  const initials =
-    (user?.firstName ? user?.firstName.charAt(0).toUpperCase() : "") +
-    (user?.lastName ? user?.lastName.charAt(0).toUpperCase() : "");
-
   return (
     <div ref={menuRef} className="relative">
       {/* Avatar */}
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex h-10 w-10 items-center justify-center rounded-full bg-linear-to-br from-cyan-500 to-blue-600 text-sm font-semibold shadow-md"
+        className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 text-white font-bold shadow-indigo-200 shadow-lg hover:scale-105 transition-transform"
       >
         {initials}
       </button>
@@ -44,35 +46,41 @@ export default function UserMenu({ user }: { user: User }) {
       <AnimatePresence>
         {open && (
           <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.15 }}
-            className="absolute right-0 mt-3 w-64 rounded-xl bg-gray-900 border border-white/10 shadow-xl overflow-hidden"
+            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+            className="absolute right-0 mt-3 w-64 rounded-2xl bg-white border border-slate-200 shadow-2xl shadow-slate-200/50 overflow-hidden z-60"
           >
-            {/* User info */}
-            <div className="px-4 py-3 border-b border-white/40">
-              <p className="text-sm font-medium">
+            {/* Header */}
+            <div className="bg-slate-50/50 px-4 py-4 border-b border-slate-100">
+              <p className="text-sm font-bold text-slate-800">
                 {user.firstName} {user.lastName}
               </p>
-              <p className="text-xs text-gray-400 truncate">{user.email}</p>
+              <p className="text-[11px] font-medium text-indigo-500 uppercase tracking-wider">
+                Pro Plan
+              </p>
             </div>
 
-            {/* Navigation */}
-            <div className="flex flex-col text-sm">
-              <MenuLink href="/dashboard">Dashboard</MenuLink>
-              <MenuLink href="/lists">Lists</MenuLink>
-              <MenuLink href="/tasks">Tasks</MenuLink>
-              <MenuLink href="/journal">Journal</MenuLink>
-              <MenuLink href="/notes">Notes</MenuLink>
-              <MenuLink href="/settings" icon={<Settings size={14} />}>
+            {/* Menu Links */}
+            <div className="p-2 flex flex-col gap-1">
+              <MenuLink href="/dashboard" onClick={() => setOpen(false)}>
+                Dashboard
+              </MenuLink>
+              <MenuLink
+                href="/settings"
+                icon={<Settings size={16} />}
+                onClick={() => setOpen(false)}
+              >
                 Settings
               </MenuLink>
+
+              <div className="my-1 border-t border-slate-100" />
+
               <button
-                onClick={() => logoutAction()}
-                className="flex items-center gap-2 px-4 py-3 text-red-400 hover:bg-white/15 transition cursor-pointer"
+                onClick={() => logout({ redirectTo: "/login" })}
+                className="flex w-full items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-rose-500 hover:bg-rose-50 transition-colors"
               >
-                <LogOut size={14} />
+                <LogOut size={16} />
                 Sign out
               </button>
             </div>
@@ -86,18 +94,28 @@ export default function UserMenu({ user }: { user: User }) {
 function MenuLink({
   href,
   children,
+  onClick,
   icon,
 }: {
   href: string;
   children: React.ReactNode;
   icon?: React.ReactNode;
+  onClick: () => void;
 }) {
   return (
     <Link
       href={href}
-      className="flex items-center gap-2 px-4 py-2 hover:bg-white/15 transition"
+      onClick={onClick}
+      className="group relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:text-indigo-600 transition-all"
     >
-      {icon}
+      {/* Subtle Background Slide-in */}
+      <div className="absolute inset-0 bg-indigo-50/0 group-hover:bg-indigo-50 rounded-xl transition-colors duration-200 -z-10" />
+
+      {/* Icon nudge animation */}
+      <span className="text-slate-400 group-hover:text-indigo-500 group-hover:translate-x-0.5 transition-transform duration-200">
+        {icon}
+      </span>
+
       {children}
     </Link>
   );

@@ -7,6 +7,18 @@ declare global {
     | FieldErrorsImpl
     | undefined;
 
+  type SessionUser = {
+    id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+  };
+
+  type Session = {
+    authenticated: boolean;
+    user: SessionUser | null;
+  };
+
   type User = {
     firstName?: string;
     lastName?: string | null;

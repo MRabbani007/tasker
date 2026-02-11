@@ -7,12 +7,15 @@ import {
   ArrowUpRight,
   TrendingUp,
   Kanban,
+  Zap,
+  Plus,
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { getCurrentUser } from "@/lib/auth/utils";
 import type { Metadata } from "next";
 import { ReactNode } from "react";
+import FadeIn from "@/components/animation/FadeIn";
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -76,9 +79,10 @@ export default async function DashboardPage() {
       {/* Bento Grid */}
       <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-6">
         {/* Row 1: Quick Stats */}
-        {stats.map((stat) => (
-          <div
+        {stats.map((stat, i) => (
+          <FadeIn
             key={stat.label}
+            index={i}
             className="md:col-span-2 p-6 rounded-3xl border border-slate-200 bg-white shadow-sm hover:shadow-md transition-all"
           >
             <div
@@ -95,11 +99,11 @@ export default async function DashboardPage() {
             <h3 className="text-3xl font-black text-slate-900 mt-1">
               {stat.value}
             </h3>
-          </div>
+          </FadeIn>
         ))}
 
         {/* Row 2: Recent Activity (Large Bento) */}
-        <div className="md:col-span-4 lg:col-span-4 p-8 rounded-4xl bg-slate-900 text-white shadow-2xl relative overflow-hidden">
+        <div className="md:col-span-2 lg:col-span-2 p-8 rounded-4xl bg-slate-900 text-white shadow-2xl relative overflow-hidden">
           <div className="relative z-10 space-y-6">
             <h2 className="text-xl font-bold flex items-center gap-2">
               <Kanban className="text-indigo-400" /> Current Sprint
@@ -158,6 +162,37 @@ export default async function DashboardPage() {
           />
         </div>
 
+        {/* Weekly Velocity */}
+        <div className="md:col-span-2 lg:col-span-2 p-6 rounded-3xl bg-white border border-slate-200 flex flex-col justify-between">
+          <div>
+            <h3 className="font-bold text-slate-800 text-sm mb-1">
+              Weekly Velocity
+            </h3>
+            <p className="text-xs text-slate-500 font-medium">
+              +12% from last week
+            </p>
+          </div>
+
+          <div className="flex items-end justify-between gap-1 h-24 mt-4">
+            {[40, 70, 45, 90, 65, 40, 80].map((height, i) => (
+              <div
+                key={i}
+                style={{ height: `${height}%` }}
+                className={cn(
+                  "w-full rounded-t-lg transition-all duration-500",
+                  i === 6
+                    ? "bg-indigo-600"
+                    : "bg-slate-100 group-hover:bg-indigo-100",
+                )}
+              />
+            ))}
+          </div>
+          <div className="flex justify-between mt-2 text-[10px] font-bold text-slate-400 uppercase">
+            <span>Mon</span>
+            <span>Sun</span>
+          </div>
+        </div>
+
         {/* Row 3: Recent Note (Small Bento) */}
         <div className="md:col-span-4 lg:col-span-3 p-6 rounded-3xl bg-white border border-slate-200">
           <div className="flex items-center justify-between mb-6">
@@ -170,6 +205,32 @@ export default async function DashboardPage() {
             &ldquo;Need to finalize the database schema for the journal feature.
             Remember to add the entry metadata and tags support...&rdquo;
           </p>
+        </div>
+
+        {/* Quick Capture Card */}
+        <div className="md:col-span-4 lg:col-span-3 p-6 rounded-3xl bg-indigo-600 text-white shadow-xl shadow-indigo-200 relative overflow-hidden group">
+          <div className="relative z-10">
+            <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+              <Zap size={18} className="fill-white" /> Quick Capture
+            </h3>
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="I need to..."
+                className="w-full bg-white/10 border border-white/20 rounded-2xl py-3 px-4 text-sm placeholder:text-indigo-200 outline-none focus:bg-white/20 transition-all"
+              />
+              <button className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-white text-indigo-600 rounded-xl hover:scale-105 transition-transform">
+                <Plus size={18} strokeWidth={3} />
+              </button>
+            </div>
+            <p className="text-[10px] mt-3 font-medium text-indigo-100/70 uppercase tracking-widest">
+              Press{" "}
+              <kbd className="bg-white/10 px-1.5 py-0.5 rounded border border-white/20">
+                Enter
+              </kbd>{" "}
+              to save to Inbox
+            </p>
+          </div>
         </div>
       </div>
     </main>

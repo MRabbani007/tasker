@@ -34,7 +34,9 @@ export default function DraggableUserLists({
   return (
     <div
       className={cn(
-        docked ? "sticky top-4" : "fixed top-4 left-4 z-60",
+        docked
+          ? "md:sticky hidden md:inline-block top-4"
+          : "md:fixed hidden top-4 left-4 z-60",
         showUserLists ? "w-64" : "w-0",
         isDragging && "pointer-events-none",
       )}

@@ -1,15 +1,21 @@
 "use client";
 
+import { useSession } from "@/context/SessionProvider";
 import { loginAction } from "@/lib/auth/actions";
+import { Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
+import { MdOutlineTaskAlt } from "react-icons/md";
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
+  const { refresh } = useSession();
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
     setError(null);
@@ -20,86 +26,138 @@ export default function LoginPage() {
       const res = await loginAction(null, formData);
 
       if (res.status === 200) {
-        router.push("/");
+        await refresh();
+        router.push("/dashboard");
       } else if (res.status === 400 || res.status === 403) {
         setError("Invalid email or password");
       } else {
         setError("Something went wrong!");
       }
     } catch {
+      setError("An unexpected error occurred. Please try again.");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <main className="flex-1 flex items-center justify-center bg-linear-to-br from-slate-50 to-slate-100 px-4 py-10">
-      <div className="w-full max-w-md rounded-2xl bg-white shadow-lg border border-slate-200">
-        <div className="p-6 space-y-6">
-          {/* Header */}
-          <div className="text-center space-y-1">
-            <h1 className="text-2xl font-semibold text-slate-900">
-              Welcome back
-            </h1>
-            {/* <p className="text-sm text-slate-500">Sign in to a new adventure</p> */}
-          </div>
+    <main className="min-h-[calc(100vh-64px)] flex items-center justify-center bg-slate-50/50 px-4 py-12">
+      <div className="w-full max-w-100">
+        {/* Brand Identity */}
+        <div className="flex flex-col items-center mb-8">
+          <Link href="/" className="flex items-center gap-2 group mb-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-indigo-200 shadow-lg group-hover:scale-105 transition-transform">
+              <MdOutlineTaskAlt size={24} />
+            </div>
+            <span className="font-bold text-2xl text-slate-900 tracking-tight">
+              Tasker
+            </span>
+          </Link>
+          <h1 className="text-2xl font-bold text-slate-900">Welcome back</h1>
+          <p className="text-slate-500 text-sm font-medium mt-1">
+            Log in to manage your daily adventure
+          </p>
+        </div>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-1">
+        <div className="rounded-2xl bg-white p-8 shadow-xl shadow-slate-200/60 border border-slate-100">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Email Field */}
+            <div className="space-y-1.5">
               <label
                 htmlFor="email"
-                className="text-sm font-medium text-slate-700"
+                className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1"
               >
-                Email
+                Email Address
               </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                placeholder="you@example.com"
-                required
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900"
-              />
+              <div className="relative group">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors">
+                  <Mail size={18} />
+                </div>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  placeholder="name@company.com"
+                  required
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-3 pl-10 pr-4 text-sm outline-none ring-indigo-600/10 transition-all focus:border-indigo-600 focus:bg-white focus:ring-4"
+                />
+              </div>
             </div>
 
-            <div className="space-y-1">
-              <label
-                htmlFor="password"
-                className="text-sm font-medium text-slate-700"
-              >
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                placeholder="••••••••"
-                required
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900"
-              />
+            {/* Password Field */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between ml-1">
+                <label
+                  htmlFor="password"
+                  className="text-xs font-bold text-slate-500 uppercase tracking-widest"
+                >
+                  Password
+                </label>
+                <Link
+                  href="/forgot-password"
+                  className="text-xs font-bold text-indigo-600 hover:text-indigo-700"
+                >
+                  Forgot?
+                </Link>
+              </div>
+              <div className="relative group">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors">
+                  <Lock size={18} />
+                </div>
+                <input
+                  id="password"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="••••••••"
+                  required
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-3 pl-10 pr-12 text-sm outline-none ring-indigo-600/10 transition-all focus:border-indigo-600 focus:bg-white focus:ring-4"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
             </div>
 
-            {error && <p className="text-sm text-red-600">{error}</p>}
+            {/* Error Message */}
+            {error && (
+              <div className="rounded-lg bg-rose-50 p-3 border border-rose-100 animate-shake">
+                <p className="text-xs font-semibold text-rose-600 text-center">
+                  {error}
+                </p>
+              </div>
+            )}
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-lg bg-slate-900 py-2.5 text-sm font-medium text-white hover:bg-slate-800 transition disabled:opacity-60"
+              className="w-full rounded-xl bg-indigo-600 py-3.5 text-sm font-bold text-white shadow-lg shadow-indigo-100 hover:bg-indigo-700 hover:shadow-indigo-200 transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              {loading ? "Signing in…" : "Sign in"}
+              {loading ? (
+                <>
+                  <Loader2 size={18} className="animate-spin" />
+                  Authenticating...
+                </>
+              ) : (
+                "Sign in to Tasker"
+              )}
             </button>
           </form>
 
-          {/* Footer */}
-          <div className="text-center text-sm text-slate-500">
-            Don&apos;t have an account?{" "}
-            <a
-              href="/register"
-              className="font-medium text-slate-900 hover:underline"
-            >
-              Create one
-            </a>
+          {/* Alternative Auth */}
+          <div className="mt-8 pt-6 border-t border-slate-100">
+            <p className="text-center text-sm text-slate-500 font-medium">
+              New to Tasker?{" "}
+              <Link
+                href="/register"
+                className="font-bold text-indigo-600 hover:text-indigo-700 hover:underline underline-offset-4"
+              >
+                Create an account
+              </Link>
+            </p>
           </div>
         </div>
       </div>

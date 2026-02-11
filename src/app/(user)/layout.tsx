@@ -1,6 +1,7 @@
 import Sidebar from "@/features/navigation/Sidebar";
 import SearchModal from "@/features/tasks/SearchModal";
-import { getCurrentUser } from "@/lib/auth/utils";
+import { getSession } from "@/lib/auth/utils";
+import { redirect } from "next/navigation";
 import React, { ReactNode } from "react";
 
 export default async function UserLayout({
@@ -8,11 +9,15 @@ export default async function UserLayout({
 }: {
   children: ReactNode;
 }) {
-  const user = await getCurrentUser();
+  const session = await getSession();
+
+  if (!session.authenticated) {
+    redirect("/login");
+  }
 
   return (
     <div className="flex-1 flex items-stretch">
-      <Sidebar user={{ firstName: user?.firstName ?? "" }} />
+      <Sidebar user={{ firstName: session?.user?.firstName ?? "" }} />
       {children}
       <SearchModal />
     </div>

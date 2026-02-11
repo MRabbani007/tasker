@@ -1,8 +1,8 @@
 export function formatDateToParam(date: Date) {
   const dd = String(date.getDate()).padStart(2, "0");
   const mm = String(date.getMonth() + 1).padStart(2, "0");
-  const yy = String(date.getFullYear()).slice(-2);
-  return `${dd}-${mm}-${yy}`;
+  const yyyy = String(date.getFullYear());
+  return `${dd}-${mm}-${yyyy}`;
 }
 
 export function parseParamToDate(param?: string | null) {
@@ -11,7 +11,7 @@ export function parseParamToDate(param?: string | null) {
   const [dd, mm, yy] = param.split("-");
   if (!dd || !mm || !yy) return new Date();
 
-  return new Date(`20${yy}-${mm}-${dd}`);
+  return new Date(`${yy}-${mm}-${dd}`);
 }
 
 export function parseDayParam(day?: string | null) {
@@ -20,7 +20,7 @@ export function parseDayParam(day?: string | null) {
   const [dd, mm, yy] = day.split("-");
   if (!dd || !mm || !yy) return new Date();
 
-  const date = new Date(Number(`20${yy}`), Number(mm) - 1, Number(dd));
+  const date = new Date(Number(`${yy}`), Number(mm) - 1, Number(dd));
   return isNaN(date.getTime()) ? new Date() : date;
 }
 
@@ -33,7 +33,11 @@ export function isSameDay(a: Date, b: Date) {
 }
 
 export function toInputDateValue(date: Date) {
-  return date.toISOString().split("T")[0]; // yyyy-mm-dd
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+
+  return `${y}-${m}-${d}`; // LOCAL yyyy-mm-dd
 }
 
 // lib/journal-date.ts

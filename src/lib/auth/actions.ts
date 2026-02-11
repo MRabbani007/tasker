@@ -5,7 +5,7 @@ import { hashPassword, verifyPassword } from "./password";
 import { createSession } from "./session";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
-import { failData, success } from "../actions/actionResponse";
+import { fail, failData, success } from "../actions/actionResponse";
 import { loginSchema, registerSchema } from "../schemas/auth";
 
 export async function registerAction(_: unknown, formData: FormData) {
@@ -105,4 +105,14 @@ export async function logoutAction() {
   }
 
   redirect("/");
+}
+
+export async function forgotPasswordAction(_: unknown, formData: FormData) {
+  try {
+    const data = Object.fromEntries(formData.entries());
+
+    return success(data);
+  } catch {
+    return fail(500, "Server Error");
+  }
 }

@@ -17,6 +17,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useSession } from "@/context/SessionProvider";
 
 const items = [
   { label: "My Tasks", icon: CircleCheckBig, url: "/tasks" },
@@ -30,6 +31,7 @@ const items = [
 export default function Sidebar({ user }: { user?: { firstName: string } }) {
   const [collapsed, setCollapsed] = useState(true);
   const pathname = usePathname();
+  const { logout } = useSession();
   const isAdmin = true; // Logic check
 
   // 1. Keyboard Shortcut Logic (⌘+B or Ctrl+B)
@@ -156,8 +158,8 @@ export default function Sidebar({ user }: { user?: { firstName: string } }) {
           <Settings size={20} className="shrink-0" />
           {!collapsed && <span className="text-sm font-medium">Settings</span>}
         </Link>
-
         <button
+          onClick={() => logout({ redirectTo: "/" })}
           className={cn(
             "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-rose-500 transition-all hover:bg-rose-50",
             collapsed && "justify-center",

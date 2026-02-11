@@ -71,7 +71,7 @@ export function TaskListsDropZone({
 
   return (
     <DndContext onDragEnd={onDragEnd}>
-      <div className="flex gap-4 relative group/dropzone">
+      <div className="flex flex-col md:flex-row gap-4 relative group/dropzone">
         {!showUserLists && (
           <div className="absolute -top-3 -left-12 flex items-center gap-1.5 opacity-0 group-hover/dropzone:opacity-100 transition-all duration-200 z-70 translate-y-1 group-hover/dropzone:translate-y-0">
             <button

@@ -41,7 +41,10 @@ export default function Carousel({
 
   return (
     <div
-      className={cn("relative w-full overflow-hidden rounded-xl", className)}
+      className={cn(
+        "relative w-full h-full overflow-hidden rounded-xl",
+        className,
+      )}
       onMouseEnter={() =>
         timeoutRef.current && clearTimeout(timeoutRef.current)
       }
@@ -51,11 +54,11 @@ export default function Carousel({
     >
       {/* Slides */}
       <div
-        className="flex transition-transform duration-700 ease-out"
+        className="flex h-full shrink-0 transition-transform duration-700 ease-out"
         style={{ transform: `translateX(-${index * 100}%)` }}
       >
         {children.map((child, i) => (
-          <div key={i} className="w-full shrink-0">
+          <div key={i} className="w-full h-full shrink-0 bg-red-200">
             {child}
           </div>
         ))}

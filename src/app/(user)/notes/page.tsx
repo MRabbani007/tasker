@@ -56,7 +56,7 @@ export default async function NotesPage() {
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 xl:grid-cols-[280px_1fr] gap-10 items-start">
         {/* Sidebar: All Notes List */}
-        <aside className="sticky top-6 space-y-6">
+        <aside className="md:sticky top-6 space-y-6">
           <div className="flex items-center justify-between px-1">
             <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400">
               Inventory

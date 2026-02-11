@@ -1,5 +1,4 @@
 import { ReactNode } from "react";
-import MobileMenu from "./MobileMenu";
 
 export default function PageHeader({
   pageTitle,
@@ -24,7 +23,6 @@ export default function PageHeader({
             {icon}
           </div>
         )}
-        {<MobileMenu />}
         {pageTitle && <h1 className="flex-1 font-normal">{pageTitle}</h1>}
         {children}
       </header>

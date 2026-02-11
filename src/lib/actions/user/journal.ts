@@ -51,10 +51,15 @@ export async function getJournalEntries({
     // };
 
     const orderByClause:
-      | Prisma.JournalEntryOrderByWithRelationInput
+      | Prisma.JournalEntryOrderByWithRelationInput[]
       | undefined = sort
-      ? { [sort.field]: sort.direction }
-      : { sortIndex: "asc" };
+      ? [{ [sort.field]: sort.direction }, { createdAt: "desc" }]
+      : [{ occurredOn: "desc" }, { createdAt: "desc" }];
+
+    //       const orderByClause: Prisma.JournalEntryOrderByWithRelationInput[] = [
+    //   { occurredOn: sort?.direction ?? "desc" },
+    //   { createdAt: "desc" },
+    // ];
 
     const [data, count] = await prisma.$transaction([
       prisma.journalEntry.findMany({

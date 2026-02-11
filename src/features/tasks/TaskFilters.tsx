@@ -81,7 +81,7 @@ export default function TaskFilters() {
   };
 
   return (
-    <div className="flex flex-wrap gap-2 ml-auto">
+    <div className="flex flex-wrap gap-2 md:ml-auto">
       {TASK_FILTERS.map((filter) => {
         const active = isActive(filter.params);
         const Icon = filter.icon;

@@ -65,7 +65,7 @@ export default function TaskListsSidebar({ lists }: Props) {
       </button>
       <aside
         className={cn(
-          "relative border-r border-zinc-200 bg-zinc-50 transition-all duration-300 hidden md:inline-flex",
+          "relative border-r border-zinc-200 bg-zinc-50 transition-all duration-300 inline-flex",
           open ? "w-64" : "w-0",
           !hydrated && "invisible",
         )}

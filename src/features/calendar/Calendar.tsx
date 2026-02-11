@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { MonthView } from "./MonthView";
 import { Task } from "../../../generated/prisma/client";
 import { useSearchParams } from "next/navigation";
-import { useRouter } from "next/navigation";
 import { CalendarHeader } from "./CalendarHeader";
 import { WeekView } from "./WeekView";
 import { DayView } from "./DayView";

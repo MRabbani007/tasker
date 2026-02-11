@@ -11,7 +11,11 @@ import {
   deleteJournalEntry,
   updateJournalEntry,
 } from "@/lib/actions/user/journal";
-import { formatDateToParam } from "@/lib/format/date";
+import {
+  formatDateToParam,
+  parseDayParam,
+  toInputDateValue,
+} from "@/lib/format/date";
 import {
   CreateJournalEntryInput,
   createJournalEntrySchema,
@@ -58,9 +62,11 @@ export default function FormJournalEntry() {
           : undefined,
       });
     } else if (showForm === "CREATE_JOURNAL_ENTRY") {
+      const day = searchParams?.get("day")?.trim();
+
       reset({
         ...T_JournalEntry,
-        occurredOn: searchParams?.get("day") ?? formatDateToParam(new Date()),
+        occurredOn: toInputDateValue(parseDayParam(day)),
       });
     }
   }, [showForm, editItem, reset, searchParams]);

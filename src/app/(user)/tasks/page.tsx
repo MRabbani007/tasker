@@ -77,7 +77,7 @@ export default async function TasksPage({
       </header>
 
       {/* Filter Bar */}
-      <div className="flex items-center justify-between p-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-500 rounded-2xl">
+      <div className="flex flex-wrap items-center p-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-500 rounded-2xl">
         <TaskFilters />
         <div className="flex items-center gap-2 pr-2">
           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
