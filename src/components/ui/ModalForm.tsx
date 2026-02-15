@@ -82,16 +82,16 @@ export default function ModalForm({
               )}
             >
               {/* Refined Header */}
-              <div className="flex items-center justify-between px-8 py-5 border-b border-slate-100">
+              <div className="flex items-center justify-between px-4 md:px-8 py-4 md:py-6 border-b border-slate-200">
                 <div className="space-y-0.5">
                   <h2 className="text-xl font-bold text-slate-900">
                     {title || (type === "add" ? "New Entry" : "Edit Details")}
                   </h2>
-                  <p className="text-[11px] font-bold text-indigo-500 uppercase tracking-widest">
+                  {/* <p className="text-[11px] font-bold text-indigo-500 uppercase tracking-widest">
                     {type === "edit"
                       ? "Modifying existing record"
                       : "Creation Mode"}
-                  </p>
+                  </p> */}
                 </div>
                 <button
                   type="button"
@@ -103,12 +103,12 @@ export default function ModalForm({
               </div>
 
               {/* Body */}
-              <div className="px-8 py-6 max-h-[70vh] overflow-y-auto">
+              <div className="px-8 py-6 max-h-[60vh] overflow-y-auto">
                 {children}
               </div>
 
               {/* Footer */}
-              <div className="px-8 py-5 bg-slate-50/50 border-t border-slate-100 flex items-center gap-3">
+              <div className="px-4 md:px-8 py-4 bg-slate-50/50 border-t border-slate-100 flex items-center gap-3">
                 {deleteButton && (
                   <button
                     onClick={onDelete}
@@ -116,7 +116,7 @@ export default function ModalForm({
                     className="flex items-center gap-2 px-4 py-2.5 text-sm font-bold text-rose-500 hover:bg-rose-50 rounded-xl transition-all"
                   >
                     <Trash2 size={18} />
-                    <span>Delete</span>
+                    <span className="hidden md:inline">Delete</span>
                   </button>
                 )}
 
@@ -137,9 +137,17 @@ export default function ModalForm({
                   {loading ? (
                     <Loader2 size={18} className="animate-spin" />
                   ) : (
-                    <Check size={18} />
+                    <Check size={18} className="hidden md:inline" />
                   )}
-                  {submitButton || (type === "add" ? "Create" : "Save Changes")}
+                  {submitButton ||
+                    (type === "add" ? (
+                      "Create"
+                    ) : (
+                      <>
+                        <span>Save</span>
+                        <span className="hidden md:inline">Changes</span>
+                      </>
+                    ))}
                 </button>
               </div>
             </form>

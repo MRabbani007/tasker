@@ -55,7 +55,7 @@ export default async function TasksPage({
   return (
     <main className="flex-1 flex flex-col gap-8 p-6 lg:p-10 max-w-7xl mx-auto w-full">
       {/* Header Area */}
-      <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+      <header className="flex md:items-end justify-between gap-4">
         <div className="space-y-1">
           <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100 duration-200">
             Task Board
@@ -71,7 +71,7 @@ export default async function TasksPage({
         <UserFormTrigger type="container" value="CREATE_TASK">
           <button className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 text-white font-semibold shadow-lg shadow-indigo-100 hover:bg-indigo-700 active:scale-95 transition-all">
             <Plus size={18} />
-            <span>Add Task</span>
+            <span className="hidden md:inline">Add Task</span>
           </button>
         </UserFormTrigger>
       </header>

@@ -43,7 +43,7 @@ export default async function ListsPage({
   return (
     <main className="flex-1 flex flex-col gap-8 p-6 lg:p-10 max-w-7xl mx-auto w-full">
       {/* 1. Page Header */}
-      <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+      <header className="flex md:items-end justify-between gap-6">
         <div className="space-y-1">
           <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">
             Task Collections
@@ -64,7 +64,7 @@ export default async function ListsPage({
           <UserFormTrigger type="container" value="CREATE_LIST">
             <button className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 text-white font-bold shadow-lg shadow-indigo-100 hover:bg-indigo-700 active:scale-95 transition-all">
               <Plus size={18} />
-              <span>Create List</span>
+              <span className="hidden md:inline">Create List</span>
             </button>
           </UserFormTrigger>
         </div>

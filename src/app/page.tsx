@@ -313,7 +313,7 @@ export default function HomePage() {
                 </ul>
 
                 <Link
-                  href="/signup"
+                  href="/register"
                   className={cn(
                     "w-full py-4 rounded-xl font-bold text-sm transition-all",
                     tier.featured
@@ -346,7 +346,7 @@ export default function HomePage() {
 
             <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
               <Link
-                href="/signup"
+                href="/register"
                 className="w-full sm:w-auto px-8 py-4 bg-white text-indigo-600 font-bold rounded-xl hover:bg-indigo-50 transition-all shadow-xl"
               >
                 Get Started Now

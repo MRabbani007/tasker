@@ -69,7 +69,7 @@ export default async function JournalPage({
     <main className="flex-1 flex flex-col gap-8 p-6 lg:p-10 max-w-7xl mx-auto w-full">
       <header
         className={cn(
-          "flex flex-col md:flex-row md:items-end justify-between gap-4 rounded-2xl p-4",
+          "flex md:items-end justify-between gap-4 rounded-2xl p-4",
           acrylic,
         )}
       >
@@ -84,7 +84,7 @@ export default async function JournalPage({
         <UserFormTrigger type="container" value="CREATE_JOURNAL_ENTRY">
           <button className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 text-white font-semibold shadow-lg shadow-indigo-100 hover:bg-indigo-700 active:scale-95 transition-all">
             <Plus size={18} />
-            <span>Add Entry</span>
+            <span className="hidden md:inline">Add Entry</span>
           </button>
         </UserFormTrigger>
       </header>

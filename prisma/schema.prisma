@@ -130,6 +130,7 @@ model TaskList {
   status    String?
   type      String?
   icon      String?
+  color     String?
   sortIndex Int       @default(0)
   pinnedAt  DateTime?
   deletedAt DateTime?
@@ -147,6 +148,7 @@ model Note {
   id        String    @id @default(uuid())
   title     String?
   details   String?
+  color     String?
   sortIndex Int       @default(0)
   openedAt  DateTime?
   pinnedAt  DateTime?

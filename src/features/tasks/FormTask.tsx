@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import toast from "react-hot-toast";
@@ -16,19 +16,21 @@ import { cn } from "@/lib/utils";
 import { useTaskFormVisibility } from "@/hooks/useTaskFormVisibility";
 import { Expand } from "@/components/Expand";
 import { useCommandShortcut } from "@/hooks/useCommandShortcut";
+import { FlagColorSelector } from "./FlagColorSelector";
+import PrioritySelector from "./PrioritySelector";
 
-const COLORS = [
-  "bg-sky-500",
-  "bg-emerald-500",
-  "bg-amber-500",
-  "bg-orange-500",
-  "bg-rose-500",
-  "bg-slate-500",
-];
+// const COLORS = [
+//   "bg-sky-500",
+//   "bg-emerald-500",
+//   "bg-amber-500",
+//   "bg-orange-500",
+//   "bg-rose-500",
+//   "bg-slate-500",
+// ];
 
 export default function FormTask() {
   const { showForm, setShowForm, editItem } = useUser();
-  const { visibility, toggle, showAll, hideAll } = useTaskFormVisibility();
+  const { visibility, toggle } = useTaskFormVisibility();
   const isOpen = showForm === "CREATE_TASK" || showForm === "EDIT_TASK";
 
   const {
@@ -43,15 +45,27 @@ export default function FormTask() {
     defaultValues: { ...T_Task, priority: 1, color: "bg-slate-500" },
   });
 
-  const priority = watch("priority");
+  const priority = watch("priority") ?? 1;
   const color = watch("color");
-  const allVisible = Object.values(visibility).every(Boolean);
 
   useCommandShortcut({ key: "a", alt: false }, () =>
     setShowForm("CREATE_TASK"),
   );
 
-  // Sync data on Edit
+  useEffect(() => {
+    if (showForm === "EDIT_TASK" && editItem?.type === "task") {
+      if (editItem?.data?.dueAt) {
+        if (visibility.due === false) {
+          toggle("due");
+        }
+      } else {
+        if (visibility.due === true) {
+          toggle("due");
+        }
+      }
+    }
+  }, [showForm, editItem]);
+
   useEffect(() => {
     if (showForm === "EDIT_TASK" && editItem?.type === "task") {
       reset({
@@ -68,6 +82,7 @@ export default function FormTask() {
     } else if (showForm === "CREATE_TASK") {
       reset({
         ...T_Task,
+        taskListId: editItem?.data.id ?? null,
       });
     }
   }, [showForm, editItem, reset]);
@@ -92,11 +107,26 @@ export default function FormTask() {
     }
   };
 
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      const isSubmit = (e.metaKey || e.ctrlKey) && e.key === "Enter";
+
+      if (!isSubmit) return;
+
+      // Prevent newline in textarea
+      e.preventDefault();
+
+      // Trigger react-hook-form submit
+      handleSubmit(onSubmit)();
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [handleSubmit, onSubmit]);
+
   return (
     <ModalForm
-      title={
-        showForm === "CREATE_TASK" ? "Capturing Objective" : "Refining Task"
-      }
+      title={showForm === "CREATE_TASK" ? "New Task" : "Update Task"}
       isOpen={isOpen}
       setShowForm={setShowForm}
       onReset={() => setShowForm("")}
@@ -114,144 +144,88 @@ export default function FormTask() {
       }}
       maxW="max-w-3xl"
     >
-      <div className="space-y-8">
+      <div className="flex flex-col gap-4">
+        <InputField
+          placeholder="Context / Subject"
+          {...register("title")}
+          error={errors.title}
+          className="flex-1"
+        />
+
+        <TextAreaField
+          placeholder="Main Objective"
+          {...register("task")}
+          error={errors.task}
+          autoFocus
+        />
+
+        <Expand show={visibility.details}>
+          <TextAreaField
+            placeholder="Additional details..."
+            {...register("details")}
+            error={errors.details}
+          />
+        </Expand>
+
+        <div className="flex items-center gap-6">
+          <Expand show={visibility.color}>
+            <FlagColorSelector
+              value={color}
+              onChange={(v) => setValue("color", v)}
+            />
+          </Expand>
+
+          <Expand show={visibility.priority}>
+            <PrioritySelector
+              value={priority}
+              onChange={(p) => setValue("priority", p ?? 1)}
+            />
+          </Expand>
+
+          <Expand show={visibility.due}>
+            <div className="flex items-center gap-2">
+              <span className="text-zinc-500">Due</span>
+              <InputField type="date" {...register("dueOn")} />
+              <span className="text-zinc-500 ml-4">At</span>
+              <InputField type="time" {...register("dueAt")} />
+            </div>
+          </Expand>
+        </div>
+
         {/* 1. Quick Feature Toggles */}
         <div className="flex flex-wrap items-center gap-2 pb-4 border-b border-slate-100">
           <ToggleButton
-            icon={<Type size={12} />}
-            label="Title"
-            onClick={() => toggle("title")}
-            active={visibility.title}
+            icon={<Flag size={18} />}
+            label="Flag"
+            onClick={() => toggle("color")}
+            active={visibility.color}
           />
           <ToggleButton
-            icon={<AlignLeft size={12} />}
-            label="Description"
-            onClick={() => toggle("details")}
-            active={visibility.details}
-          />
-          <ToggleButton
-            icon={<Calendar size={12} />}
-            label="Deadline"
-            onClick={() => toggle("due")}
-            active={visibility.due}
-          />
-          <ToggleButton
-            icon={<AlertCircle size={12} />}
+            icon={<AlertCircle size={18} />}
             label="Priority"
             onClick={() => toggle("priority")}
             active={visibility.priority}
           />
           <ToggleButton
-            icon={<Flag size={12} />}
-            label="Flag"
-            onClick={() => toggle("color")}
-            active={visibility.color}
+            icon={<Calendar size={18} />}
+            label="Deadline"
+            onClick={() => toggle("due")}
+            active={visibility.due}
           />
-          <div className="h-4 w-px bg-slate-200 mx-1" />
-          <button
+          <ToggleButton
+            icon={<AlignLeft size={18} />}
+            label="Details"
+            onClick={() => toggle("details")}
+            active={visibility.details}
+          />
+          {/* <div className="h-4 w-px bg-slate-200 mx-1" /> */}
+          {/* <button
             type="button"
             onClick={() => (allVisible ? hideAll() : showAll())}
             className="text-[10px] font-bold uppercase tracking-tighter text-indigo-600 hover:underline"
           >
             {allVisible ? "Simplify View" : "Show All Fields"}
-          </button>
-        </div>
-
-        {/* 2. Main Content Area */}
-        <div className="space-y-6">
-          <Expand show={visibility.title}>
-            <InputField
-              label="Context / Subject"
-              placeholder="e.g. Q1 Marketing"
-              {...register("title")}
-              error={errors.title}
-            />
-          </Expand>
-
-          <TextAreaField
-            label="Main Objective"
-            placeholder="Describe the core task..."
-            {...register("task")}
-            error={errors.task}
-            autoFocus
-          />
-
-          <Expand show={visibility.details}>
-            <TextAreaField
-              label="Strategic Details"
-              placeholder="Additional context or requirements..."
-              {...register("details")}
-              error={errors.details}
-            />
-          </Expand>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Expand show={visibility.due}>
-              <div className="space-y-4">
-                <InputField
-                  label="Due Date"
-                  type="date"
-                  {...register("dueOn")}
-                />
-                <InputField
-                  label="Specific Time"
-                  type="time"
-                  {...register("dueAt")}
-                />
-              </div>
-            </Expand>
-
-            <div className="space-y-6">
-              <Expand show={visibility.priority}>
-                <div className="space-y-3">
-                  <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">
-                    Priority Level
-                  </label>
-                  <div className="flex gap-2">
-                    {[1, 2, 3, 4, 5].map((p) => (
-                      <button
-                        type="button"
-                        key={p}
-                        onClick={() => setValue("priority", p)}
-                        className={cn(
-                          "w-10 h-10 rounded-xl border-2 font-bold transition-all flex items-center justify-center",
-                          priority === p
-                            ? "bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-100 scale-110"
-                            : "bg-slate-50 border-transparent text-slate-400 hover:bg-slate-100",
-                        )}
-                      >
-                        {p}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </Expand>
-
-              <Expand show={visibility.color}>
-                <div className="space-y-3">
-                  <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">
-                    Identify Flag
-                  </label>
-                  <div className="flex gap-3 flex-wrap">
-                    {COLORS.map((c) => (
-                      <button
-                        key={c}
-                        type="button"
-                        onClick={() => setValue("color", c)}
-                        className={cn(
-                          "w-7 h-7 rounded-full transition-all ring-offset-4 shadow-sm",
-                          c,
-                          color === c
-                            ? "ring-2 ring-indigo-500 scale-110"
-                            : "hover:scale-125",
-                        )}
-                      />
-                    ))}
-                  </div>
-                </div>
-              </Expand>
-            </div>
-          </div>
+          </button> */}
         </div>
       </div>
     </ModalForm>
@@ -281,7 +255,9 @@ function ToggleButton({
       )}
     >
       {icon}
-      {label}
+      {/* <span className="opacity-0 invisible md:opacity-100 md:visible w-0 md:w-fit">
+        {label}
+      </span> */}
     </button>
   );
 }

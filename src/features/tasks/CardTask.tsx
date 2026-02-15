@@ -28,6 +28,16 @@ const priorityConfig: Record<number, { color: string; label: string }> = {
   5: { color: "bg-rose-500", label: "Urgent" },
 };
 
+const FLAG_COLORS = [
+  { value: null, label: "No flag", className: "bg-slate-200" },
+  { value: "bg-blue-500", label: "Blue", className: "bg-blue-500" },
+  { value: "bg-green-500", label: "Green", className: "bg-green-500" },
+  { value: "bg-yellow-500", label: "Yellow", className: "bg-yellow-500" },
+  { value: "bg-orange-500", label: "Orange", className: "bg-orange-500" },
+  { value: "bg-red-500", label: "Red", className: "bg-red-500" },
+  { value: "bg-purple-500", label: "Purple", className: "bg-purple-500" },
+];
+
 export default function CardTask({
   task,
 }: {
@@ -46,6 +56,9 @@ export default function CardTask({
   const debouncedCompleted = useDebounce(completed, 1000);
 
   const hasList = !!task?.taskList;
+
+  const flagColor =
+    FLAG_COLORS.find((item) => item.value === task.color)?.className ?? "";
 
   useEffect(() => {
     const handleUpdate = async () => {
@@ -76,6 +89,13 @@ export default function CardTask({
           : "border-slate-200 dark:border-slate-600 shadow-sm",
       )}
     >
+      <div
+        className={cn(
+          "absolute left-0 top-6 bottom-6 w-1 rounded-r-full transition-all",
+          flagColor,
+        )}
+      />
+
       <div className="flex items-center gap-4 px-4 pt-3 ">
         {/* 1. Optional Title as a "Topic Badge" at the very top */}
         {task.title && (

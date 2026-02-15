@@ -39,12 +39,12 @@ export default function FormCreateNote() {
         {pending ? (
           <>
             <Loader2 className="h-4 w-4 animate-spin" />
-            <span>Creating...</span>
+            <span className="hidden md:inline">Creating...</span>
           </>
         ) : (
           <>
             <Plus className="h-4 w-4 stroke-3" />
-            <span>New Note</span>
+            <span className="hidden md:inline">New Note</span>
             <Sparkles className="h-3 w-3 text-indigo-200 ml-1 hidden sm:block" />
           </>
         )}
