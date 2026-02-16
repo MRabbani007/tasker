@@ -1,14 +1,14 @@
 import Pagination from "@/components/Pagination";
 import UserFormTrigger from "@/components/UserFormTrigger";
 import CardTask from "@/features/tasks/CardTask";
+import FormPinTaskList from "@/features/tasks/FormPinTaskList";
 import FormTask from "@/features/tasks/FormTask";
 import FormTaskList from "@/features/tasks/FormTaskList";
 import TaskListsSidebar from "@/features/tasks/TaskListsSidebar";
 import { getTaskListById, getTaskLists } from "@/lib/actions/user/tasklists";
 import { getTasks } from "@/lib/actions/user/tasks";
 import { extractFilters } from "@/lib/helpers";
-import { cn } from "@/lib/utils";
-import { ArrowLeft, MoreVertical, Pin } from "lucide-react";
+import { ArrowLeft, MoreVertical } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 
@@ -33,7 +33,6 @@ export default async function ListByIdPage({
   const id = (await params).id;
 
   const { data: taskList } = await getTaskListById(id);
-  const isPinned = !!taskList?.pinnedAt;
 
   const resolvedSearchParams = await searchParams;
   const page = +(resolvedSearchParams?.page ?? 1);
@@ -81,17 +80,10 @@ export default async function ListByIdPage({
 
               {/* Actions */}
               <div className="flex items-center gap-1">
-                <button
-                  title={isPinned ? "Unpin list" : "Pin list"}
-                  className={cn(
-                    "rounded-lg p-2 transition",
-                    isPinned
-                      ? "text-sky-700 bg-sky-100"
-                      : "text-zinc-500 hover:bg-zinc-100",
-                  )}
-                >
-                  <Pin size={16} />
-                </button>
+                <FormPinTaskList
+                  id={taskList?.id ?? ""}
+                  isPinned={!!taskList?.pinnedAt}
+                />
                 {taskList && (
                   <UserFormTrigger
                     type="icon"
@@ -101,9 +93,15 @@ export default async function ListByIdPage({
                     className="rounded-lg p-2 text-zinc-500 hover:bg-zinc-100 transition"
                   />
                 )}
-                <button className="rounded-lg p-2 text-zinc-500 hover:bg-zinc-100 transition">
-                  <MoreVertical size={18} />
-                </button>
+                {taskList && (
+                  <UserFormTrigger
+                    type="icon"
+                    icon={<MoreVertical size={18} />}
+                    editItem={{ type: "tasklist", data: taskList }}
+                    value="EDIT_LIST"
+                    className="rounded-lg p-2 text-zinc-500 hover:bg-zinc-100 transition"
+                  />
+                )}
               </div>
             </div>
           </div>

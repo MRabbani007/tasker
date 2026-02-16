@@ -4,8 +4,12 @@ import { getCurrentUser } from "@/lib/auth/utils";
 import { fail, failData, success } from "../actionResponse";
 import { Prisma } from "../../../../generated/prisma/client";
 import { prisma } from "@/lib/prisma";
-import { formDataToObject, normalizeNumber } from "@/lib/helpers";
-import { TaskListSchema } from "@/lib/schemas/taskList";
+import {
+  formDataToObject,
+  normalizeDate,
+  normalizeNumber,
+} from "@/lib/helpers";
+import { TaskListPinSchema, TaskListSchema } from "@/lib/schemas/taskList";
 import { revalidatePath } from "next/cache";
 
 export async function getTaskLists({
@@ -245,11 +249,9 @@ export async function createTaskList(formData: unknown) {
       },
     });
 
-    console.log(data);
+    revalidatePath("/lists");
 
-    revalidatePath("/tasks");
-
-    return success(data, "Task created");
+    return success(data, "List created");
   } catch {
     return fail(500, "Server error");
   }
@@ -291,9 +293,57 @@ export async function updateTaskList(formData: unknown) {
       },
     });
 
-    revalidatePath("/tasks");
+    revalidatePath("/lists");
 
-    return success(data, "Task updated");
+    return success(data, "List updated");
+  } catch {
+    return fail(500, "Server error");
+  }
+}
+
+export async function pinTaskList(formData: unknown) {
+  try {
+    const user = await getCurrentUser();
+
+    if (!user) {
+      return failData(403, [], "Un-Authorized");
+    }
+
+    const raw = formDataToObject(formData as FormData);
+
+    const result = TaskListPinSchema.safeParse({
+      id: raw.id,
+      pinnedAt: normalizeDate(raw.pinnedAt),
+    });
+
+    if (!result.success) {
+      return fail(400, "Missing data");
+    }
+
+    const parsed = result.data;
+
+    const foundList = await prisma.taskList.findFirst({
+      where: { id: parsed.id },
+    });
+
+    if (!foundList) {
+      return fail(400, "List not found");
+    }
+
+    let newDate = null;
+
+    if (!foundList?.pinnedAt) {
+      newDate = new Date();
+    }
+
+    await prisma.taskList.update({
+      where: { id: parsed?.id },
+      data: { pinnedAt: newDate },
+    });
+
+    revalidatePath(`/lists/${parsed.id}`);
+
+    return success(null, "List updated");
   } catch {
     return fail(500, "Server error");
   }

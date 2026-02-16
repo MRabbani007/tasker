@@ -108,28 +108,27 @@ export default function FormTaskList() {
       deleteButton={true}
       onDelete={handleDelete}
     >
-      <InputField
-        label="Title"
-        type="text"
-        placeholder="Enter Task Title"
-        {...register("title")}
-        error={errors.title}
-        autoFocus
-      />
-      <InputField
-        label="Subtitle"
-        type="text"
-        placeholder="Enter subtitle"
-        {...register("subtitle")}
-        error={errors.subtitle}
-      />
-      <InputField
-        label="Details"
-        type="text"
-        placeholder="Enter details"
-        {...register("details")}
-        error={errors.details}
-      />
+      <div className="flex flex-col gap-4">
+        <InputField
+          type="text"
+          placeholder="Collection Name / Title"
+          {...register("title")}
+          error={errors.title}
+          autoFocus
+        />
+        <InputField
+          type="text"
+          placeholder="Subtitle"
+          {...register("subtitle")}
+          error={errors.subtitle}
+        />
+        <InputField
+          type="text"
+          placeholder="Details"
+          {...register("details")}
+          error={errors.details}
+        />
+      </div>
     </ModalForm>
   );
 }

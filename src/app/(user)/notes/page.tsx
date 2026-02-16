@@ -30,13 +30,16 @@ export default async function NotesPage() {
   return (
     <main className="flex-1 flex flex-col gap-6 p-4 md:p-6">
       {/* Dynamic Header */}
-      <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+      <header className="flex md:items-end justify-between gap-4">
         <div className="space-y-1">
           <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">
             Workspace
           </h1>
-          <p className="text-slate-500 font-medium">
-            {notes.length} total notes • Organize your thoughts and tasks
+          <p className=" text-slate-500 font-medium">
+            <span>{notes.length} total notes</span>{" "}
+            <span className="hidden md:inline">
+              • Organize your thoughts and tasks
+            </span>
           </p>
         </div>
 

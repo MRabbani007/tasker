@@ -35,3 +35,8 @@ export const CreateTaskListSchema = z.object({
 export const UpdateTaskListSchema = CreateTaskListSchema.partial().extend({
   deletedAt: dateSchema.optional(),
 });
+
+export const TaskListPinSchema = z.object({
+  id: z.string().optional(),
+  pinnedAt: dateSchema.nullable(),
+});

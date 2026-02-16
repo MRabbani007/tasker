@@ -87,6 +87,7 @@ export default function MobileMenu({
                 {authenticated ? (
                   <Link
                     href="/dashboard"
+                    onClick={() => setIsOpen(false)}
                     className="flex items-center gap-3 group"
                   >
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-indigo-200 shadow-lg group-hover:scale-105 transition-transform">
@@ -161,6 +162,7 @@ export default function MobileMenu({
                   <>
                     <Link
                       href="/settings"
+                      onClick={() => setIsOpen(false)}
                       className={cn(
                         "flex items-center gap-3 rounded-xl px-3 py-2.5 text-slate-500 transition-all hover:bg-slate-50",
                       )}
@@ -181,6 +183,7 @@ export default function MobileMenu({
                 ) : (
                   <Link
                     href="/login"
+                    onClick={() => setIsOpen(false)}
                     className="w-full inline-flex items-center justify-center rounded-xl bg-indigo-600 px-5 py-2 text-sm font-bold text-white shadow-indigo-200 shadow-lg hover:bg-indigo-700 transition-all hover:shadow-indigo-300"
                   >
                     Get Started
