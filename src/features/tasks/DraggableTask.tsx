@@ -11,12 +11,12 @@ export function DraggableTask({
   task: { id: string };
   children: React.ReactNode;
 }) {
-  const { showUserLists } = useUser();
+  const { showUserLists, openUserLists } = useUser();
 
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({
       id: `task:${task.id}`,
-      disabled: !showUserLists,
+      disabled: !showUserLists || !openUserLists,
     });
 
   const style = transform

@@ -51,7 +51,7 @@ export default function TaskListCard({
   return (
     <div
       className={cn(
-        "group relative flex flex-col rounded-3xl border p-6 transition-all duration-300",
+        "group/listcard relative flex flex-col rounded-3xl border p-6 transition-all duration-300",
         "bg-white shadow-sm hover:shadow-xl hover:shadow-indigo-500/5 hover:-translate-y-1",
         isPinned
           ? "border-amber-200 bg-linear-to-br from-amber-50/40 to-transparent"
@@ -82,14 +82,24 @@ export default function TaskListCard({
       </div>
 
       {/* 2. Main Content */}
-      <div className="flex-1 space-y-1">
-        <h3 className="text-xl font-extrabold text-slate-800 tracking-tight group-hover:text-indigo-600 transition-colors truncate">
-          {taskList.title}
-        </h3>
-        <p className="text-sm text-slate-500 line-clamp-2 leading-relaxed">
-          {taskList.subtitle || "No description provided."}
-        </p>
-      </div>
+      <Link
+        href={`/lists/${taskList.id}`}
+        className="flex-1 space-y-1 group/title"
+      >
+        <div className="flex items-center gap-2">
+          <h3 className="flex items-center gap-2 text-xl font-extrabold text-slate-800 tracking-tight group-hover/title:text-indigo-600 transition-colors truncate">
+            {taskList.title}
+          </h3>
+          <div className="p-2 rounded-xl text-slate-400 invisible group-hover/title:visible opacity-0 group-hover/title:opacity-100 group-hover/title:bg-indigo-50 group-hover/title:text-indigo-600 transition-colors">
+            <ExternalLink size={16} />
+          </div>
+        </div>
+        {taskList?.subtitle?.trim() && (
+          <p className="text-sm text-slate-500 line-clamp-2 leading-relaxed">
+            {taskList.subtitle || "No description provided."}
+          </p>
+        )}
+      </Link>
 
       {/* 3. Progress Section (Visual Delight) */}
       {!(
@@ -133,7 +143,7 @@ export default function TaskListCard({
           )}
         </div>
 
-        <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all">
+        <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover/listcard:opacity-100 transition-all">
           <Link
             href={`/lists/${taskList.id}`}
             className="p-2 rounded-xl text-slate-400 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"

@@ -22,6 +22,7 @@ import { useSearchParams } from "next/navigation";
 import React, { useEffect } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import toast from "react-hot-toast";
+import { EntryTypeSelect } from "./EntryTypeSelect";
 
 export default function FormJournalEntry() {
   const { showForm, setShowForm, editItem } = useUser();
@@ -35,6 +36,8 @@ export default function FormJournalEntry() {
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
+    watch,
+    setValue,
   } = useForm({
     resolver: zodResolver(createJournalEntrySchema),
     defaultValues: { ...T_JournalEntry },
@@ -104,6 +107,8 @@ export default function FormJournalEntry() {
     }
   };
 
+  const type = watch("type");
+
   return (
     <ModalForm
       title={showForm === "CREATE_JOURNAL_ENTRY" ? "Add Entry" : "Update Entry"}
@@ -118,27 +123,36 @@ export default function FormJournalEntry() {
       maxW="max-w-3xl"
     >
       <div className="flex flex-col gap-4">
+        <EntryTypeSelect
+          {...register("type")}
+          value={type}
+          onChange={(v) => setValue("type", v)}
+        />
         <Expand show={true}>
           <InputField
-            label="Context / Subject"
-            placeholder="e.g. Q1 Marketing"
+            placeholder="Context / Subject"
             {...register("subject")}
             error={errors.subject}
           />
         </Expand>
         <TextAreaField
-          label="Main Objective"
-          placeholder="Describe the core task..."
+          placeholder="Main Objective"
           {...register("content")}
           error={errors.content}
           autoFocus
         />
         <Expand show={true}>
-          <div className="space-y-4">
-            <InputField label="Date" type="date" {...register("occurredOn")} />
+          <div className="flex flex-col sm:flex-row items-start gap-6">
+            <InputField
+              label="Occrured On"
+              type="date"
+              className="sm:flex-1"
+              {...register("occurredOn")}
+            />
             <InputField
               label="Specific Time"
               type="time"
+              className="sm:flex-1"
               {...register("occurredAt")}
             />
           </div>

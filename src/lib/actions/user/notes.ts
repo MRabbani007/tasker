@@ -8,7 +8,18 @@ import { NoteSchema } from "@/lib/schemas/note";
 import { Prisma } from "../../../../generated/prisma/client";
 import { revalidatePath } from "next/cache";
 
-export async function getNotes({ sort }: { sort?: Sort }) {
+type NotesFitlers = {
+  query?: string;
+  showDeleted?: boolean;
+};
+
+export async function getNotes({
+  sort,
+  filters,
+}: {
+  sort?: Sort;
+  filters?: NotesFitlers;
+}) {
   try {
     const user = await getCurrentUser();
 
@@ -16,11 +27,28 @@ export async function getNotes({ sort }: { sort?: Sort }) {
       return failData(403, [], "Un-Authorized");
     }
 
-    const whereClause: Prisma.NoteWhereInput = { userId: user.id };
+    const whereClause: Prisma.NoteWhereInput = {
+      userId: user.id,
+      deletedAt: {},
+    };
+
+    // 🧠 Deleted logic
+    if (filters?.showDeleted) {
+      whereClause.deletedAt = {};
+    } else {
+      whereClause.deletedAt = null;
+    }
+
+    if (filters?.query?.trim()) {
+      whereClause.OR = [
+        { title: { contains: filters?.query, mode: "insensitive" } },
+        { details: { contains: filters?.query, mode: "insensitive" } },
+      ];
+    }
 
     const orderByClause: Prisma.NoteOrderByWithRelationInput | undefined = sort
       ? { [sort.field]: sort.direction }
-      : { sortIndex: "asc" };
+      : { updatedAt: "desc" };
 
     const [data, count] = await prisma.$transaction([
       prisma.note.findMany({
@@ -33,10 +61,12 @@ export async function getNotes({ sort }: { sort?: Sort }) {
     ]);
 
     return success(data, "", count);
-  } catch {
+  } catch (err) {
+    console.log(err);
     return failData(500, [], "Server Error");
   }
 }
+
 export async function createNote() {
   try {
     const user = await getCurrentUser();
@@ -63,6 +93,7 @@ export async function createNote() {
     return fail(500, "Server error");
   }
 }
+
 export async function updateNote(formData: unknown) {
   try {
     const user = await getCurrentUser();
@@ -91,8 +122,6 @@ export async function updateNote(formData: unknown) {
       data: {
         title: parsed.title,
         details: parsed.details,
-        pinnedAt: parsed.pinnedAt,
-        deletedAt: parsed.deletedAt,
       },
     });
 
@@ -119,7 +148,7 @@ export async function toggleOpenNote({
     await prisma.note.update({
       where: { id },
       data: {
-        openedAt,
+        openedAt: openedAt === null ? null : new Date(),
       },
     });
 
@@ -168,7 +197,12 @@ export async function deleteNote(id: string) {
       return fail(403, "Un-Authorized");
     }
 
-    await prisma.note.delete({ where: { id } });
+    await prisma.note.update({
+      where: { id },
+      data: {
+        deletedAt: new Date(),
+      },
+    });
 
     return success(null);
   } catch {

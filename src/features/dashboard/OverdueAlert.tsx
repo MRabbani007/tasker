@@ -54,7 +54,7 @@ export default function OverdueAlert({ count }: { count: number }) {
 
             <div className="flex items-center gap-3">
               <Link
-                href="/tasks?filter=critical"
+                href="/tasks?due=overdue"
                 className="flex items-center gap-2 rounded-xl bg-white px-5 py-2.5 text-xs font-bold text-rose-600 hover:bg-rose-50 transition-all hover:scale-105 active:scale-95 shadow-sm"
               >
                 Resolve Now <ArrowRight size={16} />

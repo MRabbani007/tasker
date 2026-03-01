@@ -88,7 +88,7 @@ export default async function DashboardPage() {
             Welcome back, {user?.firstName}
           </h1>
           <p className="text-slate-500 font-medium">
-            You have 3 tasks due today. Let&apos;s make progress!
+            You have {stats?.today} tasks due today. Let&apos;s make progress!
           </p>
         </div>
         <div className="flex items-center gap-2 px-3 py-1.5 bg-indigo-50 rounded-full border border-indigo-100">

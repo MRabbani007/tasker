@@ -85,7 +85,7 @@ export default function FormTaskList() {
     }
   };
 
-  useCommandShortcut({ key: "c", alt: false }, () =>
+  useCommandShortcut({ key: "¬", alt: true, cmd: true }, () =>
     setShowForm("CREATE_LIST"),
   );
 

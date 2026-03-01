@@ -1,20 +1,19 @@
 "use client";
 
-import React from "react";
+import React, { useRef } from "react";
 import { useFormStatus } from "react-dom";
-import { Plus, Loader2, Sparkles } from "lucide-react";
+import { Loader2, Sparkles, SquarePen } from "lucide-react";
 import { createNote } from "@/lib/actions/user/notes";
 import { cn } from "@/lib/utils";
 import { useCommandShortcut } from "@/hooks/useCommandShortcut";
-import { useUser } from "@/context/UserContext";
 
 export default function FormCreateNote() {
-  const { setShowForm } = useUser();
   const { pending } = useFormStatus();
+  const formRef = useRef<HTMLFormElement>(null);
 
-  useCommandShortcut({ key: "a", cmd: true, shift: true }, () =>
-    setShowForm("CREATE_NOTE"),
-  );
+  useCommandShortcut({ key: "a", cmd: true, shift: true }, () => {
+    formRef.current?.requestSubmit();
+  });
 
   const onSubmit = async (event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -23,7 +22,7 @@ export default function FormCreateNote() {
   };
 
   return (
-    <form onSubmit={onSubmit}>
+    <form ref={formRef} onSubmit={onSubmit}>
       <button
         type="submit"
         disabled={pending}
@@ -43,7 +42,7 @@ export default function FormCreateNote() {
           </>
         ) : (
           <>
-            <Plus className="h-4 w-4 stroke-3" />
+            <SquarePen className="h-4 w-4 stroke-3" />
             <span className="hidden md:inline">New Note</span>
             <Sparkles className="h-3 w-3 text-indigo-200 ml-1 hidden sm:block" />
           </>

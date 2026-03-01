@@ -72,6 +72,7 @@ declare global {
     query?: string;
     completed?: boolean | string;
     priority?: number | string;
+    due?: string;
     dueOn?: Date | string;
     completedAt?: Date | string;
     taskList?: string;
@@ -92,6 +93,8 @@ declare global {
 
   type JournalFilters = {
     query?: string;
+    type?: string;
+    subject?: string;
     day?: string;
   };
 }

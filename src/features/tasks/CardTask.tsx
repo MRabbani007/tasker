@@ -10,6 +10,7 @@ import {
   ListChecks,
   Loader,
   Check,
+  GripVertical,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
@@ -18,6 +19,8 @@ import UserFormTrigger from "@/components/UserFormTrigger";
 import { getDueInfo } from "@/lib/helpers";
 import { useDebounce } from "@/hooks/useDebounce";
 import { toggleTaskCompleted } from "@/lib/actions/user/tasks";
+import { useUser } from "@/context/UserContext";
+import { useDraggable } from "@dnd-kit/core";
 
 // More professional priority map using Slate/Indigo variants
 const priorityConfig: Record<number, { color: string; label: string }> = {
@@ -43,6 +46,24 @@ export default function CardTask({
 }: {
   task: Task & { taskList: { title: string | null } | null };
 }) {
+  const { showUserLists, openUserLists } = useUser();
+
+  const draggable = showUserLists && openUserLists;
+
+  const { attributes, listeners, setNodeRef, transform, isDragging } =
+    useDraggable({
+      id: `task:${task.id}`,
+      disabled: !draggable,
+    });
+
+  const style = transform
+    ? {
+        transform: `translate(${transform.x}px, ${transform.y}px)`,
+        zIndex: isDragging ? 100 : undefined,
+        position: isDragging ? ("relative" as const) : undefined,
+      }
+    : undefined;
+
   const [completed, setCompleted] = useState(task.completed);
   const [saving, setSaving] = useState(false);
 
@@ -81,6 +102,10 @@ export default function CardTask({
 
   return (
     <div
+      onClick={() => console.log(draggable)}
+      onDrag={() => console.log(isDragging)}
+      ref={setNodeRef}
+      style={!isDragging ? {} : style}
       className={cn(
         "flex-1 group relative flex flex-col rounded-2xl border bg-white dark:bg-zinc-800 transition-all duration-300",
         "hover:shadow-xl hover:shadow-slate-200/40 dark:hover:shadow-slate-500/40",
@@ -109,6 +134,24 @@ export default function CardTask({
           </div>
         )}
 
+        {draggable && (
+          <div
+            className={cn(
+              "flex items-center gap-2 p-4 cursor-default text-zinc-400 duration-200",
+              "invisible group-hover:visible opacity-0 group-hover:opacity-100",
+              !draggable
+                ? "cursor-default text-zinc-400"
+                : "cursor-grab active:cursor-grabbing",
+            )}
+            {...listeners}
+            {...attributes}
+          >
+            <GripVertical size={16} className="text-zinc-400" />
+            <p className="text-zinc-800" onClick={() => console.log("first")}>
+              Move
+            </p>
+          </div>
+        )}
         <UserFormTrigger
           type="container"
           value="MOVE_TASK"
@@ -175,7 +218,7 @@ export default function CardTask({
         </div>
 
         {/* 4. Metadata Footer */}
-        <div className="flex items-center justify-between mt-1 pl-9">
+        <div className="flex items-center mt-1 gap-2">
           <div className="flex items-center gap-4">
             {/* Priority Indicator */}
             <div className="flex items-center gap-1.5">
@@ -201,7 +244,7 @@ export default function CardTask({
             )}
           </div>
 
-          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="ml-auto flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
             {task.link && (
               <a
                 href={task.link}

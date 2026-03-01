@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import toast from "react-hot-toast";
-import { Calendar, Flag, AlertCircle, Type, AlignLeft } from "lucide-react";
+import { Calendar, Flag, AlertCircle, AlignLeft } from "lucide-react";
 import InputField from "@/components/forms/InputField";
 import TextAreaField from "@/components/ui/TextAreaField";
 import ModalForm from "@/components/ui/ModalForm";
@@ -101,11 +101,15 @@ export default function FormTask() {
           showForm === "CREATE_TASK" ? "Objective captured" : "Changes synced",
         );
         setShowForm("");
+      } else if (res.status === 500) {
+        toast.error("Something went wrong!");
       }
     } catch {
       toast.error("Network synchronization failed");
     }
   };
+
+  console.log(errors);
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {

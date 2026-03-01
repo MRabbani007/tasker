@@ -6,14 +6,11 @@ import { Plus, Pin, ListChecks, ChevronLeft, ChevronRight } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
-
-interface Props {
-  lists: TaskList[];
-}
+import UserFormTrigger from "@/components/UserFormTrigger";
 
 const MOBILE_BREAKPOINT = 768;
 
-export default function TaskListsSidebar({ lists }: Props) {
+export default function TaskListsSidebar({ lists }: { lists: TaskList[] }) {
   const [open, setOpen] = useState(true);
   const [hydrated, setHydrated] = useState(false);
 
@@ -79,9 +76,13 @@ export default function TaskListsSidebar({ lists }: Props) {
           {/* Header */}
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold text-zinc-700">Lists</h2>
-            <button className="rounded-lg p-1.5 hover:bg-zinc-200 transition">
-              <Plus size={16} />
-            </button>
+            {/* Create List */}
+            <UserFormTrigger type="container" value="CREATE_LIST">
+              <button className="flex items-center gap-2 px-2 py-1.5 rounded-xl bg-indigo-600 text-white font-bold shadow-lg shadow-indigo-100 hover:bg-indigo-700 active:scale-95 transition-all">
+                <Plus size={16} />
+                <span className="sr-only">Create List</span>
+              </button>
+            </UserFormTrigger>
           </div>
 
           {/* Pinned */}

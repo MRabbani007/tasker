@@ -38,7 +38,7 @@ export const T_TaskList: TaskListInput = {
 
 export const T_JournalEntry: CreateJournalEntryInput = {
   content: "",
-  type: "NOTE",
+  type: "TASK",
   occurredAt: "",
   occurredOn: new Date(),
   sortIndex: 0,

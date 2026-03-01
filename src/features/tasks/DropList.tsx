@@ -37,7 +37,7 @@ export default function DropList({
       ref={setNodeRef}
       onClick={handleClick}
       className={cn(
-        "relative z-10 rounded-lg border shadow-sm p-3 font-medium cursor-pointer transition-all duration-200",
+        "relative z-10 rounded-lg border shadow-sm py-2 px-4 text-sm font-semibold cursor-pointer transition-all duration-200",
         "hover:shadow-md hover:border-zinc-30 hover:-translate-y-0.5 hover:border-blue-400", // Added slight lift
         isOver ? "bg-blue-50 border-blue-400 scale-[1.02] shadow-inner" : "",
         isActive

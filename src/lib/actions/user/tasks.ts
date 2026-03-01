@@ -40,7 +40,7 @@ export async function getTasks({
     const skip = (page - 1) * itemsPerPage;
     const take = itemsPerPage;
 
-    const whereClause: Prisma.TaskWhereInput = { userId: user.id };
+    const whereClause: Prisma.TaskWhereInput = { userId: user.id, AND: [] };
 
     if (filters?.taskList) {
       whereClause.taskListId = filters.taskList;
@@ -54,10 +54,53 @@ export async function getTasks({
       ];
     }
 
-    if (filters?.completed && String(filters.completed) === "true") {
+    if (filters?.completed === true || filters?.completed === "true") {
       // whereClause.completed = true;
     } else {
       whereClause.completed = false;
+    }
+
+    if (filters?.priority === "important") {
+      whereClause.priority = { gt: 4 };
+    }
+
+    if (filters?.due) {
+      const now = new Date();
+
+      if (filters.due === "today") {
+        const startOfDay = new Date(now);
+        startOfDay.setHours(0, 0, 0, 0);
+
+        const endOfDay = new Date(now);
+        endOfDay.setHours(23, 59, 59, 999);
+
+        whereClause.dueOn = {
+          gte: startOfDay,
+          lte: endOfDay,
+        };
+      }
+
+      if (filters.due === "thisWeek") {
+        const startOfWeek = new Date(now);
+        startOfWeek.setDate(now.getDate() - now.getDay());
+        startOfWeek.setHours(0, 0, 0, 0);
+
+        const endOfWeek = new Date(startOfWeek);
+        endOfWeek.setDate(startOfWeek.getDate() + 6);
+        endOfWeek.setHours(23, 59, 59, 999);
+
+        whereClause.dueOn = {
+          gte: startOfWeek,
+          lte: endOfWeek,
+        };
+      }
+
+      if (filters.due === "overdue") {
+        whereClause.dueOn = {
+          lt: now,
+        };
+        whereClause.completed = false;
+      }
     }
 
     const orderByClause: Prisma.TaskOrderByWithRelationInput | undefined = sort
@@ -227,8 +270,11 @@ export async function createTask(formData: unknown) {
     let dueAt: Date | null = null;
 
     if (parsed.dueOn) {
-      const date = new Date(parsed.dueOn);
-      const time = parsed.dueAt ?? "23:59";
+      const date = parsed.dueOn;
+      const time =
+        parsed.dueAt?.trim().length === 0
+          ? "23:59"
+          : (parsed.dueAt?.trim() ?? "23:59");
 
       const [h, m] = time.split(":").map(Number);
 
@@ -301,8 +347,11 @@ export async function updateTask(formData: unknown) {
     let dueAt: Date | null = null;
 
     if (parsed.dueOn) {
-      const date = new Date(parsed.dueOn);
-      const time = parsed.dueAt ?? "23:59";
+      const date = parsed.dueOn;
+      const time =
+        parsed.dueAt?.trim().length === 0
+          ? "23:59"
+          : (parsed.dueAt?.trim() ?? "23:59");
 
       const [h, m] = time.split(":").map(Number);
 
@@ -331,7 +380,8 @@ export async function updateTask(formData: unknown) {
     revalidatePath("/tasks");
 
     return success(data, "Task updated");
-  } catch {
+  } catch (err) {
+    console.log(err);
     return fail(500, "Server error");
   }
 }

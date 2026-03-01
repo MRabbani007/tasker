@@ -9,7 +9,7 @@ export const JournalEntryTypeEnum = z.enum([
 ]);
 
 export const createJournalEntrySchema = z.object({
-  id: z.uuid().optional(),
+  id: z.string().optional(),
 
   type: JournalEntryTypeEnum,
 

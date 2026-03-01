@@ -2,7 +2,7 @@
 
 import { getCurrentUser } from "@/lib/auth/utils";
 import { fail, failData, success } from "../actionResponse";
-import { Prisma } from "../../../../generated/prisma/client";
+import { JournalEntryType, Prisma } from "../../../../generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import {
   formDataToObject,
@@ -42,6 +42,17 @@ export async function getJournalEntries({
       ];
     }
 
+    if (filters?.type) {
+      whereClause.type = {
+        equals: filters.type.toUpperCase() as JournalEntryType,
+      };
+    }
+
+    if (filters?.subject) {
+      whereClause.subject = { contains: filters.subject, mode: "insensitive" };
+    }
+
+    console.log(filters, whereClause);
     // Always apply day filter (defaults to today)
     // const { start, end } = getDayRange(filters?.day);
 
@@ -79,6 +90,40 @@ export async function getJournalEntries({
   }
 }
 
+export async function getJournalSubjects() {
+  try {
+    const user = await getCurrentUser();
+
+    if (!user) {
+      return failData(403, [], "Un-Authorized");
+    }
+
+    const rows = await prisma.journalEntry.findMany({
+      where: {
+        userId: user?.id,
+        subject: {
+          not: null,
+        },
+      },
+      distinct: ["subject"],
+      select: {
+        subject: true,
+      },
+      orderBy: {
+        subject: "asc",
+      },
+    });
+
+    const data = rows
+      .map((r) => r.subject)
+      .filter((s): s is string => Boolean(s));
+
+    return success(data, "");
+  } catch {
+    return failData(500, [], "Server Error");
+  }
+}
+
 export async function createJournalEntry(formData: unknown) {
   try {
     const user = await getCurrentUser();
@@ -104,12 +149,13 @@ export async function createJournalEntry(formData: unknown) {
 
     let occurredAt: Date | null = null;
 
-    if (parsed.occurredOn) {
+    if (parsed?.occurredOn) {
       const date = new Date(parsed.occurredOn);
       const time =
-        parsed.occurredAt?.trim() === "" ? "23:59" : parsed.occurredAt;
+        parsed.occurredAt?.trim().length === 0
+          ? "23:59"
+          : (parsed.occurredAt?.trim() ?? "23:59");
 
-      // Add functionality for moving tasks, zod schema, server action, form, button on task card, basic testing
       const [h, m] = time.split(":").map(Number);
 
       date.setHours(h, m, 0, 0);
@@ -133,8 +179,7 @@ export async function createJournalEntry(formData: unknown) {
     revalidatePath("/journal");
 
     return success(data, "Task created");
-  } catch (err) {
-    console.log(err);
+  } catch {
     return fail(500, "Server error");
   }
 }
@@ -156,8 +201,6 @@ export async function updateJournalEntry(formData: unknown) {
       occurredAt: normalizeDate(raw.occurredAt) ?? "",
     });
 
-    console.log(result);
-
     if (!result.success) {
       return fail(400, "Missing data");
     }
@@ -168,7 +211,10 @@ export async function updateJournalEntry(formData: unknown) {
 
     if (parsed.occurredAt && parsed.occurredOn) {
       const date = new Date(parsed.occurredOn);
-      const time = parsed.occurredAt ?? "23:59";
+      const time =
+        parsed.occurredAt?.trim().length === 0
+          ? "23:59"
+          : (parsed.occurredAt?.trim() ?? "23:59");
 
       const [h, m] = time.split(":").map(Number);
 
@@ -181,17 +227,17 @@ export async function updateJournalEntry(formData: unknown) {
       data: {
         subject: parsed.subject,
         content: parsed.content,
+        type: parsed?.type,
         sortIndex: parsed.sortIndex,
         occurredOn: parsed.occurredOn,
         occurredAt,
       },
     });
 
-    revalidatePath("/tasks");
+    revalidatePath("/journal");
 
-    return success(data, "Task updated");
-  } catch (err) {
-    console.log(err);
+    return success(data, "Journal entry updated");
+  } catch {
     return fail(500, "Server error");
   }
 }

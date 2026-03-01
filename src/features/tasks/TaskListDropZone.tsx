@@ -22,6 +22,10 @@ export function TaskListsDropZone({
   function onDragEnd(event: DragEndEvent) {
     const { active, over, delta } = event;
 
+    const moved = Math.abs(delta.x) > 2 || Math.abs(delta.y) > 2;
+
+    if (!moved) return;
+
     if (active.id === "sidebar") {
       setCoordinates((prev) => ({
         x: prev.x + delta.x,
@@ -74,9 +78,9 @@ export function TaskListsDropZone({
 
   return (
     <DndContext onDragEnd={onDragEnd}>
-      <div className="flex flex-col md:flex-row gap-4 relative group/dropzone">
+      <div className="flex-1 flex flex-col md:flex-row gap-4 relative group/dropzone">
         {!showUserLists && (
-          <div className="absolute -top-3 -left-12 flex items-center gap-1.5 opacity-0 group-hover/dropzone:opacity-100 transition-all duration-200 z-70 translate-y-1 group-hover/dropzone:translate-y-0">
+          <div className="absolute top-0.5 left-2 flex items-center gap-1.5 opacity-0 group-hover/dropzone:opacity-100 transition-all duration-200 z-70 translate-y-1 group-hover/dropzone:translate-y-0">
             <button
               onClick={() => setShowUserLists(true)}
               className="p-2 rounded-xl shadow-lg border border-slate-200 bg-white text-slate-400 hover:bg-slate-50 transition-colors"
@@ -93,7 +97,6 @@ export function TaskListsDropZone({
           setShowUserLists={setShowUserLists}
           coordinates={{ x, y }}
         />
-
         <div className={cn("flex-1 transition-all duration-200")}>
           {children}
         </div>

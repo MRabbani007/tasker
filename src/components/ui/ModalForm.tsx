@@ -82,7 +82,7 @@ export default function ModalForm({
               )}
             >
               {/* Refined Header */}
-              <div className="flex items-center justify-between px-4 md:px-8 py-4 md:py-6 border-b border-slate-200">
+              <div className="flex items-center justify-between px-4 md:px-8 py-4 border-b border-slate-200">
                 <div className="space-y-0.5">
                   <h2 className="text-xl font-bold text-slate-900">
                     {title || (type === "add" ? "New Entry" : "Edit Details")}

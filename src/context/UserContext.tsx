@@ -7,6 +7,7 @@ import {
   useContext,
   useState,
 } from "react";
+import { Note } from "../../generated/prisma/client";
 
 type UserContextType = {
   showSearchModal: boolean;
@@ -15,8 +16,12 @@ type UserContextType = {
   setShowForm: Dispatch<SetStateAction<UserFormType>>;
   showUserLists: boolean;
   setShowUserLists: Dispatch<SetStateAction<boolean>>;
+  openUserLists: boolean;
+  setOpenUserLists: Dispatch<SetStateAction<boolean>>;
   editItem: UserEditItem;
   setEditItem: Dispatch<SetStateAction<UserEditItem>>;
+  openNote: Note | null;
+  setOpenNote: Dispatch<SetStateAction<Note | null>>;
 };
 
 export const UserContext = createContext<UserContextType | null>(null);
@@ -31,6 +36,9 @@ export default function UserProvider({
 
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [showUserLists, setShowUserLists] = useState(false);
+  const [openUserLists, setOpenUserLists] = useState(false);
+
+  const [openNote, setOpenNote] = useState<Note | null>(null);
 
   return (
     <UserContext.Provider
@@ -43,6 +51,10 @@ export default function UserProvider({
         setShowSearchModal,
         showUserLists,
         setShowUserLists,
+        openUserLists,
+        setOpenUserLists,
+        openNote,
+        setOpenNote,
       }}
     >
       {children}
