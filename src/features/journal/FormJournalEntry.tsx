@@ -107,6 +107,23 @@ export default function FormJournalEntry() {
     }
   };
 
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      const isSubmit = (e.metaKey || e.ctrlKey) && e.key === "Enter";
+
+      if (!isSubmit) return;
+
+      // Prevent newline in textarea
+      e.preventDefault();
+
+      // Trigger react-hook-form submit
+      handleSubmit(onSubmit)();
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [handleSubmit, onSubmit]);
+
   const type = watch("type");
 
   return (

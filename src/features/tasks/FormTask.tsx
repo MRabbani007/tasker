@@ -109,8 +109,6 @@ export default function FormTask() {
     }
   };
 
-  console.log(errors);
-
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       const isSubmit = (e.metaKey || e.ctrlKey) && e.key === "Enter";
