@@ -102,8 +102,6 @@ export default function CardTask({
 
   return (
     <div
-      onClick={() => console.log(draggable)}
-      onDrag={() => console.log(isDragging)}
       ref={setNodeRef}
       style={!isDragging ? {} : style}
       className={cn(
@@ -127,7 +125,7 @@ export default function CardTask({
           <div className="flex-1 flex items-center gap-1.5">
             <div className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-indigo-50 border border-indigo-100/50 max-w-[80%]">
               <Hash className="h-3 w-3 text-indigo-400" />
-              <span className="text-[10px] font-bold text-indigo-600 uppercase truncate">
+              <span className="text-[10px] font-semibold text-indigo-600 uppercase truncate">
                 {task.title}
               </span>
             </div>
@@ -201,7 +199,7 @@ export default function CardTask({
           >
             <p
               className={cn(
-                "text-base font-semibold leading-snug text-slate-800 dark:text-slate-100 cursor-pointer transition-colors",
+                "text-base font-normal leading-snug text-slate-800 dark:text-slate-100 cursor-pointer transition-colors",
                 completed && "line-through text-slate-400",
               )}
             >

@@ -27,6 +27,7 @@ interface Props {
   onDelete?: () => void;
   maxW?: "max-w-3xl" | "max-w-5xl" | "max-w-7xl";
   overflow?: "scroll" | "none";
+  footer?: ReactNode | null;
 }
 
 export default function ModalForm({
@@ -44,6 +45,7 @@ export default function ModalForm({
   deleteButton,
   onDelete,
   maxW = "max-w-3xl",
+  footer,
 }: Props) {
   // Custom scroll lock logic is good, but for production consider 'overflow-hidden' on html/body
   useEffect(() => {
@@ -108,48 +110,52 @@ export default function ModalForm({
               </div>
 
               {/* Footer */}
-              <div className="px-4 md:px-8 py-4 bg-slate-50/50 border-t border-slate-100 flex items-center gap-3">
-                {deleteButton && (
-                  <button
-                    onClick={onDelete}
-                    type="button"
-                    className="flex items-center gap-2 px-4 py-2.5 text-sm font-bold text-rose-500 hover:bg-rose-50 rounded-xl transition-all"
-                  >
-                    <Trash2 size={18} />
-                    <span className="hidden md:inline">Delete</span>
-                  </button>
-                )}
-
-                <div className="flex-1" />
-
-                <button
-                  type="reset"
-                  className="px-6 py-2.5 text-sm font-bold text-slate-500 hover:text-slate-700 transition-colors"
-                >
-                  {cancelButton}
-                </button>
-
-                <button
-                  type="submit"
-                  disabled={disabled || loading}
-                  className="flex items-center gap-2 px-8 py-2.5 bg-indigo-600 text-white rounded-xl font-bold text-sm shadow-lg shadow-indigo-100 hover:bg-indigo-700 disabled:opacity-50 transition-all active:scale-95"
-                >
-                  {loading ? (
-                    <Loader2 size={18} className="animate-spin" />
-                  ) : (
-                    <Check size={18} className="hidden md:inline" />
+              {footer === undefined ? (
+                <div className="px-4 md:px-8 py-4 bg-slate-50/50 border-t border-slate-100 flex items-center gap-3">
+                  {deleteButton && (
+                    <button
+                      onClick={onDelete}
+                      type="button"
+                      className="flex items-center gap-2 px-4 py-2.5 text-sm font-bold text-rose-500 hover:bg-rose-50 rounded-xl transition-all"
+                    >
+                      <Trash2 size={18} />
+                      <span className="hidden md:inline">Delete</span>
+                    </button>
                   )}
-                  {submitButton ||
-                    (type === "add" ? (
-                      "Create"
+
+                  <div className="flex-1" />
+
+                  <button
+                    type="reset"
+                    className="px-6 py-2.5 text-sm font-bold text-slate-500 hover:text-slate-700 transition-colors"
+                  >
+                    {cancelButton}
+                  </button>
+
+                  <button
+                    type="submit"
+                    disabled={disabled || loading}
+                    className="flex items-center gap-2 px-8 py-2.5 bg-indigo-600 text-white rounded-xl font-bold text-sm shadow-lg shadow-indigo-100 hover:bg-indigo-700 disabled:opacity-50 transition-all active:scale-95"
+                  >
+                    {loading ? (
+                      <Loader2 size={18} className="animate-spin" />
                     ) : (
-                      <>
-                        <span>Save</span>
-                        <span className="hidden md:inline">Changes</span>
-                      </>
-                    ))}
-                </button>
-              </div>
+                      <Check size={18} className="hidden md:inline" />
+                    )}
+                    {submitButton ||
+                      (type === "add" ? (
+                        "Create"
+                      ) : (
+                        <>
+                          <span>Save</span>
+                          <span className="hidden md:inline">Changes</span>
+                        </>
+                      ))}
+                  </button>
+                </div>
+              ) : (
+                footer
+              )}
             </form>
           </motion.div>
         </>

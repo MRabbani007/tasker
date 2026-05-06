@@ -7,6 +7,7 @@ import UserProviderContainer from "@/context/UserProviderContainer";
 import { Toaster } from "react-hot-toast";
 import { getCurrentUser } from "@/lib/auth/utils";
 import { SessionProvider } from "@/context/SessionProvider";
+import TaskProvider from "@/context/TaskProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -69,18 +70,20 @@ export default async function RootLayout({
       >
         <SessionProvider>
           <UserProviderContainer>
-            <div className="flex flex-col items-stretch min-h-screen">
-              <Navbar
-                user={{
-                  firstName: user?.firstName,
-                  lastName: user?.lastName,
-                  email: user?.email,
-                }}
-              />
-              {children}
-              <Footer />
-              <Toaster />
-            </div>
+            <TaskProvider>
+              <div className="flex flex-col items-stretch min-h-screen">
+                <Navbar
+                  user={{
+                    firstName: user?.firstName,
+                    lastName: user?.lastName,
+                    email: user?.email,
+                  }}
+                />
+                {children}
+                <Footer />
+                <Toaster />
+              </div>
+            </TaskProvider>
           </UserProviderContainer>
         </SessionProvider>
       </body>

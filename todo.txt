@@ -27,3 +27,18 @@ journal:
 
 The Design Style: "Modern Acrylic"
 color palette Indigo Slate & Frosted Pearl
+
+Tasks will sit in lists (taskList Model), taskLists can be grouped in projects
+Collections control work flow or task completion status, as a more advanced "status" field,
+
+I want to make default collections: 
+"Ideas", white board
+"Planned", next sprint
+"Started", in progress
+"Completed", 
+"Cancelled"
+// Note: keep a default collection
+
+collections can be used for the kanban to view tasks in a columns
+collections are user specific, 
+default can be created to a user on account creation, or a UI can provide functionality to load default collections

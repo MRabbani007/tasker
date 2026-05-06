@@ -25,6 +25,12 @@ declare global {
     email?: string;
   };
 
+  type ProfileDto = {
+    taskListId?: string | null;
+    noteId?: string | null;
+    darkMode?: string | null;
+  };
+
   type AdminFiltersType = {
     query?: string;
   };
@@ -46,6 +52,7 @@ declare global {
     | "MOVE_TASK"
     | "CREATE_JOURNAL_ENTRY"
     | "EDIT_JOURNAL_ENTRY"
+    | "SELECT_LIST"
     | "";
 
   type EditItem<TType extends string, TData> = {
@@ -80,15 +87,6 @@ declare global {
 
   type TaskListFilters = {
     query?: string;
-  };
-
-  type TaskListSummary = {
-    important: number;
-    dueToday: number;
-    dueThisWeek: number;
-    overdue: number;
-    open: number;
-    completed: number;
   };
 
   type JournalFilters = {

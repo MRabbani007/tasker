@@ -46,12 +46,27 @@ export async function getTaskLists({
     const orderByClause: Prisma.TaskListOrderByWithRelationInput | undefined =
       sort ? { [sort.field]: sort.direction } : { sortIndex: "asc" };
 
+    // ---- date boundaries for "today"
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+
+    const endOfToday = new Date();
+    endOfToday.setHours(23, 59, 59, 999);
+
     const [data, count] = await prisma.$transaction([
       prisma.taskList.findMany({
         where: whereClause,
         take,
         skip,
         orderBy: orderByClause,
+        select: {
+          id: true,
+          title: true,
+          subtitle: true,
+          details: true,
+          icon: true,
+          color: true,
+        },
       }),
       prisma.taskList.count({
         where: whereClause,
@@ -64,9 +79,77 @@ export async function getTaskLists({
   }
 }
 
+export async function getTaskListSummaries(listIds: string[]) {
+  const user = await getCurrentUser();
+  if (!user) return failData(403, {}, "Unauthorized");
+
+  const now = new Date();
+  const startOfToday = new Date(now.setHours(0, 0, 0, 0));
+  const endOfToday = new Date(now.setHours(23, 59, 59, 999));
+
+  const startOfWeek = new Date();
+  startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+  startOfWeek.setHours(0, 0, 0, 0);
+
+  const endOfWeek = new Date(startOfWeek);
+  endOfWeek.setDate(endOfWeek.getDate() + 6);
+  endOfWeek.setHours(23, 59, 59, 999);
+
+  const result: Record<string, TaskListSummary> = {};
+
+  for (const listId of listIds) {
+    const tasks = await prisma.task.findMany({
+      where: { taskListId: listId },
+      select: {
+        completed: true,
+        priority: true,
+        dueOn: true,
+      },
+    });
+
+    result[listId] = {
+      id: listId,
+      open: tasks.filter((t) => !t.completed).length,
+      completed: tasks.filter((t) => t.completed).length,
+      important: tasks.filter((t) => !t.completed && t.priority >= 4).length,
+      overdue: tasks.filter(
+        (t) => !t.completed && t.dueOn && t.dueOn < startOfToday,
+      ).length,
+      dueToday: tasks.filter(
+        (t) =>
+          !t.completed &&
+          !!t.dueOn &&
+          t.dueOn >= startOfToday &&
+          t.dueOn <= endOfToday,
+      ).length,
+      dueThisWeek: tasks.filter(
+        (t) =>
+          !t.completed &&
+          !!t.dueOn &&
+          t.dueOn >= startOfWeek &&
+          t.dueOn <= endOfWeek,
+      ).length,
+    };
+  }
+
+  return success(result);
+}
+
 export async function getDashboardLists() {
   const user = await getCurrentUser();
   if (!user) return [];
+
+  // const summaries = await prisma.task.groupBy({
+  //   by: ["taskListId"],
+  //   where: {
+  //     taskListId: { in: listIds },
+  //     userId: user.id,
+  //   },
+  //   _count: {
+  //     _all: true,
+  //     completed: true,
+  //   },
+  // });
 
   return await prisma.taskList.findMany({
     where: { userId: user.id, deletedAt: null },

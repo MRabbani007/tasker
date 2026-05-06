@@ -8,7 +8,7 @@ import TaskListsSidebar from "@/features/tasks/TaskListsSidebar";
 import { getTaskListById, getTaskLists } from "@/lib/actions/user/tasklists";
 import { getTasks } from "@/lib/actions/user/tasks";
 import { extractFilters } from "@/lib/helpers";
-import { ArrowLeft, MoreVertical } from "lucide-react";
+import { ArrowLeft, MoreVertical, Plus } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 
@@ -53,8 +53,8 @@ export default async function ListByIdPage({
     <main className="flex-1 flex items-stretch relative">
       <TaskListsSidebar lists={taskLists} />
       <div className="flex-1 flex flex-col pb-4">
-        <header className=" bg-white/80 backdrop-blur border-b border-zinc-200">
-          <div className="px-4 py-5 max-w-5xl mx-auto">
+        <header className="bg-white/80 backdrop-blur border-b border-zinc-200 w-full px-8">
+          <div className="px-4 py-5 w-full">
             {/* Back */}
             <Link
               href="/lists"
@@ -67,32 +67,48 @@ export default async function ListByIdPage({
             {/* Title row */}
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
-                <h1 className="truncate text-2xl font-semibold text-zinc-900">
-                  {taskList?.title}
-                </h1>
-
-                {taskList?.subtitle?.trim() && (
-                  <p className="mt-1 text-sm text-zinc-600">
-                    {taskList?.subtitle}
-                  </p>
+                {/* Form trigger now wraps the Title and Subtitle */}
+                {taskList ? (
+                  <UserFormTrigger
+                    editItem={{ type: "tasklist", data: taskList }}
+                    value="EDIT_LIST"
+                    className="group text-left block"
+                  >
+                    <h1 className="truncate text-2xl font-semibold text-zinc-900 group-hover:text-indigo-600 transition">
+                      {taskList?.title}
+                    </h1>
+                    {taskList?.subtitle?.trim() && (
+                      <p className="mt-1 text-sm text-zinc-600 group-hover:text-zinc-900">
+                        {taskList?.subtitle}
+                      </p>
+                    )}
+                  </UserFormTrigger>
+                ) : (
+                  <h1 className="truncate text-2xl font-semibold text-zinc-900">
+                    Loading...
+                  </h1>
                 )}
               </div>
 
               {/* Actions */}
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-3">
                 <FormPinTaskList
                   id={taskList?.id ?? ""}
                   isPinned={!!taskList?.pinnedAt}
                 />
+
                 {taskList && (
                   <UserFormTrigger
-                    type="icon"
-                    iconName="add"
+                    type="container"
                     editItem={{ type: "tasklist", data: taskList }}
                     value="CREATE_TASK"
-                    className="rounded-lg p-2 text-zinc-500 hover:bg-zinc-100 transition"
-                  />
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition shadow-sm"
+                  >
+                    <Plus size={18} />
+                    <span>Add Task</span>
+                  </UserFormTrigger>
                 )}
+
                 {taskList && (
                   <UserFormTrigger
                     type="icon"
@@ -106,6 +122,7 @@ export default async function ListByIdPage({
             </div>
           </div>
         </header>
+
         <div className="flex-1 flex flex-col">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 p-6">
             {data.map((task) => (

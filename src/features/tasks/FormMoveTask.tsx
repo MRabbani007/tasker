@@ -2,6 +2,7 @@
 
 import ModalForm from "@/components/ui/ModalForm";
 import SelectField from "@/components/ui/SelectField";
+import { useTasks } from "@/context/TaskProvider";
 import { useUser } from "@/context/UserContext";
 import { moveTask } from "@/lib/actions/user/tasks";
 import { MoveTaskInput, MoveTaskSchema } from "@/lib/schemas/task";
@@ -15,8 +16,16 @@ type Option = {
   value: string;
 };
 
-export default function FormMoveTask({ options }: { options: Option[] }) {
+export default function FormMoveTask() {
   const { showForm, setShowForm, editItem } = useUser();
+  const { taskLists } = useTasks();
+
+  const options = taskLists
+    ? taskLists.map((item) => ({
+        label: item.title ?? "",
+        value: item.id,
+      }))
+    : [];
 
   const isOpen = showForm === "MOVE_TASK";
 

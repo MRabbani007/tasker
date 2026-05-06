@@ -22,6 +22,8 @@ type UserContextType = {
   setEditItem: Dispatch<SetStateAction<UserEditItem>>;
   openNote: Note | null;
   setOpenNote: Dispatch<SetStateAction<Note | null>>;
+  profile: ProfileDto | null;
+  setProfile: Dispatch<SetStateAction<ProfileDto | null>>;
 };
 
 export const UserContext = createContext<UserContextType | null>(null);
@@ -33,6 +35,7 @@ export default function UserProvider({
 }) {
   const [showForm, setShowForm] = useState<UserFormType>("");
   const [editItem, setEditItem] = useState<UserEditItem>(null);
+  const [profile, setProfile] = useState<ProfileDto | null>(null);
 
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [showUserLists, setShowUserLists] = useState(false);
@@ -55,6 +58,8 @@ export default function UserProvider({
         setOpenUserLists,
         openNote,
         setOpenNote,
+        profile,
+        setProfile,
       }}
     >
       {children}

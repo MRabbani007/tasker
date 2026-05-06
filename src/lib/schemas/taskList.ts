@@ -40,3 +40,9 @@ export const TaskListPinSchema = z.object({
   id: z.string().optional(),
   pinnedAt: dateSchema.nullable(),
 });
+
+export const SelectTaskListSchema = z.object({
+  taskListId: z.string(),
+});
+
+export type SelectTaskListInput = z.infer<typeof SelectTaskListSchema>;
