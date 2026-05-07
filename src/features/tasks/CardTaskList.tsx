@@ -6,6 +6,7 @@ import { ExternalLink, Pin, Layers } from "lucide-react";
 import { TaskList } from "../../../generated/prisma/client";
 import UserFormTrigger from "@/components/UserFormTrigger";
 import { cn } from "@/lib/utils";
+import { useTasks } from "@/context/TaskProvider";
 
 const SUMMARY_PRIORITY = [
   {
@@ -34,18 +35,17 @@ const SUMMARY_PRIORITY = [
   },
 ];
 
-export default function TaskListCard({
-  taskList,
-}: {
-  taskList: TaskList & { summary: TaskListSummary };
-}) {
+export default function TaskListCard({ taskList }: { taskList: TaskList }) {
+  const { getListSummary } = useTasks();
+
+  const summary = getListSummary?.(taskList.id);
+
   const isPinned = !!taskList.pinnedAt;
   const totalTasks =
-    Number(taskList.summary.open || 0) +
-    Number(taskList.summary.completed || 0);
+    Number(summary?.open || 0) + Number(summary?.completed || 0);
   const progress =
     totalTasks > 0
-      ? (Number(taskList.summary.completed) / Number(totalTasks)) * 100
+      ? (Number(summary?.completed) / Number(totalTasks)) * 100
       : 0;
 
   return (
@@ -83,7 +83,7 @@ export default function TaskListCard({
 
       {/* 2. Main Content */}
       <Link
-        href={`/lists/${taskList.id}`}
+        href={`/tasks?taskList=${taskList.id}`}
         className="flex-1 space-y-1 group/title"
       >
         <div className="flex items-center gap-2">
@@ -103,8 +103,7 @@ export default function TaskListCard({
 
       {/* 3. Progress Section (Visual Delight) */}
       {!(
-        Number(taskList.summary.open || 0) +
-          Number(taskList.summary.completed || 0) ===
+        Number(summary?.open || 0) + Number(summary?.completed || 0) ===
         0
       ) && (
         <div className="mt-6 space-y-2">
@@ -129,7 +128,8 @@ export default function TaskListCard({
               Empty list
             </span>
           ) : (
-            pickTopSummaries(taskList.summary).map((item) => (
+            summary &&
+            pickTopSummaries(summary).map((item) => (
               <div
                 key={item.key}
                 className={cn(
@@ -145,7 +145,7 @@ export default function TaskListCard({
 
         <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover/listcard:opacity-100 transition-all">
           <Link
-            href={`/lists/${taskList.id}`}
+            href={`/tasks?taskList=$${taskList.id}`}
             className="p-2 rounded-xl text-slate-400 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
           >
             <ExternalLink size={16} />
@@ -170,6 +170,6 @@ function pickTopSummaries(summary: TaskListSummary, max = 3) {
     ...item,
     value: summary[item.key as keyof typeof summary] || 0,
   }))
-    .filter((item) => item.value > 0)
+    .filter((item) => +item.value > 0)
     .slice(0, max);
 }

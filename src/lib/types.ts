@@ -32,7 +32,7 @@ declare global {
   }
 
   type TaskListSummary = {
-    id: string;
+    taskListId: string;
     important: number;
     dueToday: number;
     dueThisWeek: number;
@@ -49,6 +49,8 @@ declare global {
     icon: string | null;
     color: string | null;
     summary?: TaskListSummary | null;
+    pinnedAt?: Date | null;
+    deletedAt?: Date | null;
   };
 }
 

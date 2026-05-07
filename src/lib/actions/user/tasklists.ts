@@ -59,14 +59,6 @@ export async function getTaskLists({
         take,
         skip,
         orderBy: orderByClause,
-        select: {
-          id: true,
-          title: true,
-          subtitle: true,
-          details: true,
-          icon: true,
-          color: true,
-        },
       }),
       prisma.taskList.count({
         where: whereClause,
@@ -80,59 +72,66 @@ export async function getTaskLists({
 }
 
 export async function getTaskListSummaries(listIds: string[]) {
-  const user = await getCurrentUser();
-  if (!user) return failData(403, {}, "Unauthorized");
+  try {
+    const user = await getCurrentUser();
 
-  const now = new Date();
-  const startOfToday = new Date(now.setHours(0, 0, 0, 0));
-  const endOfToday = new Date(now.setHours(23, 59, 59, 999));
+    if (!user) return failData(403, [], "Unauthorized");
 
-  const startOfWeek = new Date();
-  startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
-  startOfWeek.setHours(0, 0, 0, 0);
+    const now = new Date();
+    const startOfToday = new Date(now.setHours(0, 0, 0, 0));
+    const endOfToday = new Date(now.setHours(23, 59, 59, 999));
 
-  const endOfWeek = new Date(startOfWeek);
-  endOfWeek.setDate(endOfWeek.getDate() + 6);
-  endOfWeek.setHours(23, 59, 59, 999);
+    const startOfWeek = new Date();
+    startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+    startOfWeek.setHours(0, 0, 0, 0);
 
-  const result: Record<string, TaskListSummary> = {};
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(endOfWeek.getDate() + 6);
+    endOfWeek.setHours(23, 59, 59, 999);
 
-  for (const listId of listIds) {
-    const tasks = await prisma.task.findMany({
-      where: { taskListId: listId },
-      select: {
-        completed: true,
-        priority: true,
-        dueOn: true,
-      },
-    });
+    // const result: Record<string, TaskListSummary> = {};
+    const data: TaskListSummary[] = [];
 
-    result[listId] = {
-      id: listId,
-      open: tasks.filter((t) => !t.completed).length,
-      completed: tasks.filter((t) => t.completed).length,
-      important: tasks.filter((t) => !t.completed && t.priority >= 4).length,
-      overdue: tasks.filter(
-        (t) => !t.completed && t.dueOn && t.dueOn < startOfToday,
-      ).length,
-      dueToday: tasks.filter(
-        (t) =>
-          !t.completed &&
-          !!t.dueOn &&
-          t.dueOn >= startOfToday &&
-          t.dueOn <= endOfToday,
-      ).length,
-      dueThisWeek: tasks.filter(
-        (t) =>
-          !t.completed &&
-          !!t.dueOn &&
-          t.dueOn >= startOfWeek &&
-          t.dueOn <= endOfWeek,
-      ).length,
-    };
+    for (const listId of listIds) {
+      const tasks = await prisma.task.findMany({
+        where: { taskListId: listId },
+        select: {
+          completed: true,
+          priority: true,
+          dueOn: true,
+        },
+      });
+
+      // result[listId] =
+      data.push({
+        taskListId: listId,
+        open: tasks.filter((t) => !t.completed).length,
+        completed: tasks.filter((t) => t.completed).length,
+        important: tasks.filter((t) => !t.completed && t.priority >= 4).length,
+        overdue: tasks.filter(
+          (t) => !t.completed && t.dueOn && t.dueOn < startOfToday,
+        ).length,
+        dueToday: tasks.filter(
+          (t) =>
+            !t.completed &&
+            !!t.dueOn &&
+            t.dueOn >= startOfToday &&
+            t.dueOn <= endOfToday,
+        ).length,
+        dueThisWeek: tasks.filter(
+          (t) =>
+            !t.completed &&
+            !!t.dueOn &&
+            t.dueOn >= startOfWeek &&
+            t.dueOn <= endOfWeek,
+        ).length,
+      });
+    }
+
+    return success(data);
+  } catch (error) {
+    return failData(500, [], "Server Error");
   }
-
-  return success(result);
 }
 
 export async function getDashboardLists() {
@@ -260,9 +259,10 @@ export async function getTaskListsWithSummary({
 
     const statsMap = new Map(stats.map((s) => [s.taskListId, s]));
 
-    const data = lists.map((list) => ({
+    const data: TaskListDTO[] = lists.map((list) => ({
       ...list,
       summary: statsMap.get(list.id) ?? {
+        taskListId: "",
         important: 0,
         dueToday: 0,
         dueThisWeek: 0,

@@ -4,40 +4,55 @@ import { ChevronDown, Calendar, CheckCircle2, Clock } from "lucide-react";
 import { cn } from "@/lib/utils"; // Standard Tailwind merge utility
 import { useTasks } from "@/context/TaskProvider";
 import UserFormTrigger from "@/components/UserFormTrigger";
+import { IconRenderer } from "@/lib/icons/lucide";
 
 export default function SelectedTaskList({
   selectedListId,
 }: {
   selectedListId?: string | null;
 }) {
-  const { taskLists } = useTasks();
+  const { taskLists, getListSummary } = useTasks();
 
   const selectedList = selectedListId
     ? (taskLists.find((item) => item.id === selectedListId) as TaskListDTO)
     : null;
 
-  if (!selectedList) return null;
+  // 1. Resolve Display Data (Selected List vs. Global View)
+  const displayData = selectedList
+    ? {
+        title: selectedList.title,
+        subtitle: selectedList.subtitle || "Project List",
+        icon: selectedList.icon,
+        color: selectedList.color || "#4f46e5",
+        summary: getListSummary(selectedList.id),
+      }
+    : {
+        title: "All Tasks",
+        subtitle: "Global Task Board",
+        icon: "lucide:LayoutGrid", // Using a dashboard icon for 'All'
+        color: "#64748b", // Neutral slate for global view
+        summary: getListSummary(""), // Assuming getListSummary() with no ID returns totals
+      };
 
-  const { summary, color, title, subtitle, icon } = selectedList;
-  const accentColor = color || "#4f46e5"; // Fallback to your indigo
+  const { title, subtitle, icon, color, summary } = displayData;
 
   return (
-    <UserFormTrigger
-      type="container"
-      value="SELECT_LIST"
-      className="block w-full max-w-4xl"
-    >
-      <button className="group relative w-full flex flex-col md:flex-row md:items-center justify-between gap-6 p-5 rounded-2xl bg-white border border-slate-100 shadow-sm hover:shadow-md hover:border-slate-200 transition-all duration-300 text-left">
+    <div className="group relative bg-white rounded-3xl border border-slate-100 p-6 shadow-sm transition-all duration-500 overflow-hidden">
+      <div className="flex items-stretch flex-wrap md:flex-nowrap gap-6">
         {/* Left Section: Identity */}
-        <div className="flex items-center gap-5">
+        <UserFormTrigger
+          type="container"
+          value="SELECT_LIST"
+          className="flex items-center gap-5 mr-auto cursor-pointer"
+        >
           <div
-            className="shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-105 duration-300"
+            className="shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-105 duration-300 shadow-sm"
             style={{
-              backgroundColor: `${accentColor}15`, // 15% opacity background
-              color: accentColor,
+              backgroundColor: `${color}15`,
+              color: color,
             }}
           >
-            {/* <IconRenderer iconString={icon} size={28} /> */}
+            <IconRenderer iconString={icon} size={28} />
           </div>
 
           <div className="space-y-1">
@@ -50,45 +65,70 @@ export default function SelectedTaskList({
                 className="text-slate-400 group-hover:translate-y-0.5 transition-transform"
               />
             </div>
-            {subtitle && (
-              <p className="text-slate-500 text-sm font-medium line-clamp-1">
-                {subtitle}
-              </p>
-            )}
+            <p className="text-slate-500 text-sm font-medium line-clamp-1">
+              {subtitle}
+            </p>
           </div>
-        </div>
+        </UserFormTrigger>
 
-        {/* Right Section: Summary Stats (Production Grade Data Viz) */}
+        {/* Right Section: Summary Stats */}
         {summary && (
-          <div className="flex items-center gap-4 self-end md:self-center border-t md:border-t-0 md:border-l border-slate-100 pt-4 md:pt-0 md:pl-6">
+          <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end border-t md:border-t-0 md:border-l border-slate-100 pt-4 md:pt-0 md:pl-6">
             <StatItem
               label="Overdue"
               value={summary.overdue}
-              icon={<Clock size={14} />}
+              icon={<Clock size={18} />}
               variant={summary.overdue > 0 ? "danger" : "neutral"}
             />
             <StatItem
               label="Today"
               value={summary.dueToday}
-              icon={<Calendar size={14} />}
+              icon={<Calendar size={18} />}
               variant="warning"
             />
             <StatItem
               label="Done"
               value={summary.completed}
-              icon={<CheckCircle2 size={14} />}
+              icon={<CheckCircle2 size={18} />}
               variant="success"
             />
           </div>
         )}
+      </div>
 
-        {/* Subtle Decorative Accent */}
-        <div
-          className="absolute left-0 top-1/4 bottom-1/4 w-1 rounded-r-full transition-all group-hover:h-1/2"
-          style={{ backgroundColor: accentColor }}
-        />
-      </button>
-    </UserFormTrigger>
+      {/* Footer Info */}
+      <div className="mt-6 flex items-center justify-between border-t border-slate-50 pt-4">
+        <div className="flex items-center gap-2">
+          <span
+            className="w-1.5 h-1.5 rounded-full"
+            style={{ backgroundColor: color }}
+          />
+          <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest">
+            {summary?.open ?? 0} active tasks
+          </span>
+        </div>
+
+        <UserFormTrigger
+          type="container"
+          value="SELECT_LIST"
+          className="text-sm font-bold text-indigo-600 hover:text-indigo-700 transition-colors z-10"
+        >
+          {selectedList ? "Switch List →" : "Select List →"}
+        </UserFormTrigger>
+      </div>
+
+      {/* Subtle Side Accent */}
+      <div
+        className="absolute left-0 top-1/4 bottom-1/4 w-1 rounded-r-full transition-all group-hover:top-4 group-hover:bottom-4"
+        style={{ backgroundColor: color }}
+      />
+
+      {/* Background Glow */}
+      <div
+        className="absolute -right-12 -top-12 w-48 h-48 rounded-full blur-3xl opacity-[0.07] transition-opacity group-hover:opacity-10"
+        style={{ backgroundColor: color }}
+      />
+    </div>
   );
 }
 
@@ -116,15 +156,21 @@ function StatItem({
   return (
     <div
       className={cn(
-        "flex flex-col items-center min-w-14 p-2 rounded-xl border transition-colors",
+        "flex flex-col gap-1 min-w-20 p-2 rounded-xl border transition-colors",
         styles[variant],
       )}
     >
-      <span className="flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider opacity-80">
+      <p>
+        <span className="flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider opacity-80">
+          {label}
+        </span>
+      </p>
+      <p className="flex items-center justify-between gap-2">
         {icon}
-        {label}
-      </span>
-      <span className="text-lg font-extrabold leading-none mt-1">{value}</span>
+        <span className="text-lg font-extrabold leading-none mt-1">
+          {value}
+        </span>
+      </p>
     </div>
   );
 }

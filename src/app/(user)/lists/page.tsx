@@ -1,8 +1,9 @@
 import Pagination from "@/components/Pagination";
 import UserFormTrigger from "@/components/UserFormTrigger";
+import TaskHydrator from "@/context/TaskHydrator";
 import TaskListCard from "@/features/tasks/CardTaskList";
 import FormTaskList from "@/features/tasks/FormTaskList";
-import { getTaskListsWithSummary } from "@/lib/actions/user/tasklists";
+import { getTaskLists } from "@/lib/actions/user/tasklists";
 import { extractFilters } from "@/lib/helpers";
 import { Plus, Search, Pin, Layers, LayoutGrid } from "lucide-react";
 import type { Metadata } from "next";
@@ -31,7 +32,7 @@ export default async function ListsPage({
     query: "query",
   });
 
-  const { data, count = 0 } = await getTaskListsWithSummary({
+  const { data, count = 0 } = await getTaskLists({
     page,
     itemsPerPage: 12,
     filters,
@@ -42,6 +43,7 @@ export default async function ListsPage({
 
   return (
     <main className="flex-1 flex flex-col gap-8 p-6 lg:p-10 max-w-7xl mx-auto w-full">
+      <TaskHydrator />
       {/* 1. Page Header */}
       <header className="flex md:items-end justify-between gap-6">
         <div className="space-y-1">

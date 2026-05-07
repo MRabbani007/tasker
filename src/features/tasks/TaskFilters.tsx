@@ -17,37 +17,37 @@ export const TASK_FILTERS = [
     id: "all",
     label: "All",
     icon: List,
-    params: {},
+    params: { completed: null, due: null, priority: null },
   },
   {
     id: "completed",
     label: "Completed",
     icon: CheckCircle,
-    params: { completed: "true" },
+    params: { completed: "true", due: null, priority: null },
   },
   {
     id: "today",
     label: "Today",
     icon: Calendar,
-    params: { due: "today" },
+    params: { due: "today", completed: null, priority: null },
   },
   {
     id: "week",
     label: "This week",
     icon: CalendarDays,
-    params: { due: "thisWeek" },
+    params: { due: "thisWeek", completed: null, priority: null },
   },
   {
     id: "important",
     label: "Important",
     icon: Star,
-    params: { priority: "important" },
+    params: { priority: "important", completed: null, due: null },
   },
   {
     id: "overdue",
     label: "Overdue",
     icon: AlertTriangle,
-    params: { due: "overdue" },
+    params: { due: "overdue", completed: null, priority: null },
   },
 ] as const;
 
@@ -56,54 +56,66 @@ export default function TaskFilters() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const completed = searchParams.get("completed");
-  const due = searchParams.get("due");
-  const priority = searchParams.get("priority");
-
-  const isActive = (params: Record<string, string>) => {
-    if (Object.keys(params).length === 0) {
-      return !completed && !due && !priority;
+  const isActive = (params: Record<string, string | null>) => {
+    // If it's the "All" filter
+    if (
+      params.completed === null &&
+      params.due === null &&
+      params.priority === null
+    ) {
+      return (
+        !searchParams.get("completed") &&
+        !searchParams.get("due") &&
+        !searchParams.get("priority")
+      );
     }
-
-    return Object.entries(params).every(
-      ([key, value]) => searchParams.get(key) === value,
+    // Check if the specific key-value pair exists
+    return Object.entries(params).some(
+      ([key, value]) => value !== null && searchParams.get(key) === value,
     );
   };
 
-  const applyFilter = (params: Record<string, string>) => {
-    const newParams = new URLSearchParams();
+  const applyFilter = (params: Record<string, string | null>) => {
+    const newParams = new URLSearchParams(searchParams.toString());
 
     Object.entries(params).forEach(([key, value]) => {
-      newParams.set(key, value);
+      if (value === null) newParams.delete(key);
+      else newParams.set(key, value);
     });
 
     router.push(`${pathname}?${newParams.toString()}`, { scroll: false });
   };
 
   return (
-    <div className="flex flex-wrap gap-2 md:ml-auto">
+    <div className="flex items-center gap-1 overflow-x-auto no-scrollbar pb-1 md:pb-0">
       {TASK_FILTERS.map((filter) => {
         const active = isActive(filter.params);
         const Icon = filter.icon;
 
         return (
-          <motion.button
+          <button
             key={filter.id}
-            whileTap={{ scale: 0.95 }}
             onClick={() => applyFilter(filter.params)}
             className={cn(
-              "group flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium transition duration-200",
+              "relative flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition-all duration-300 whitespace-nowrap",
               active
-                ? "bg-white/10 text-indigo-800"
-                : "text-gray-400 hover:bg-white/5 hover:text-gray-700 dark:hover:text-gray-200",
+                ? "bg-white text-indigo-600 shadow-sm ring-1 ring-slate-200"
+                : "text-slate-500 hover:text-slate-900 hover:bg-slate-100",
             )}
-            title={filter.label}
           >
-            <Icon size={14} className={active ? "" : "opacity-70"} />
-
-            {/* Hide text on small screens if you want icon-only */}
-            <span className="hidden sm:inline">{filter.label}</span>
-          </motion.button>
+            <Icon
+              size={14}
+              className={cn("transition-transform", active && "scale-110")}
+            />
+            <span>{filter.label}</span>
+            {active && (
+              <motion.div
+                layoutId="active-pill"
+                className="absolute inset-0 rounded-xl ring-2 ring-indigo-500/20"
+                transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+              />
+            )}
+          </button>
         );
       })}
     </div>
